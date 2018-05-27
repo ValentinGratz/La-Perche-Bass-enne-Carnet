@@ -19,7 +19,7 @@ Fichier réalisé à l'aide d'un template bootstrap.
   * Activer et faire fonctionner le bouton
   * faire la page suivi.html qui affiche les données saisie à partie du fichier sql dans un tableau
 ### Niveau SQL :
-  * création du fichier sql
+  * <s>création du fichier sql</s>
   * insertion du fichier dans le index.html
 ### Niveau PHP :
   * insertion en php pour le formulaire (liaison entre la page et le fichier sql)
