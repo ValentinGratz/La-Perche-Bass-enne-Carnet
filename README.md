@@ -15,7 +15,8 @@ Fichier réalisé à l'aide d'un template bootstrap.
 
 ## Travail restant
 ### Niveau html :
-  * ajout d'un bouton pour valider le formulaire
+  * <s>ajout d'un bouton pour valider le formulaire</s>
+  * Activer et faire fonctionner le bouton
   * faire la page suivi.html qui affiche les données saisie à partie du fichier sql dans un tableau
 ### Niveau SQL :
   * création du fichier sql
