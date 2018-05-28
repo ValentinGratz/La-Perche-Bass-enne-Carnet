@@ -20,10 +20,12 @@ Fichier réalisé à l'aide d'un template bootstrap.
   * faire la page suivi.html qui affiche les données saisie à partie du fichier sql dans un tableau
 ### Niveau SQL :
   * <s>création du fichier sql</s>
-  * insertion du fichier dans le index.html
+  * <s>insertion du fichier dans le index.html</s>
 ### Niveau PHP :
-  * insertion en php pour le formulaire (liaison entre la page et le fichier sql)
+  * <s>insertion en php pour le formulaire (liaison entre la page et le fichier sql)</s>
 
 # © COPYRIGHT
 Ce projet est personnel, donc aucune copie partielle ou totale n'est autorisée. 
 Je publie ce projet pour seulement avoir votre aide, n'étant que débutant en programmation. 
+
+Pour certaines partie des fichiers, j'ai eu l'aide d'un ami. 
