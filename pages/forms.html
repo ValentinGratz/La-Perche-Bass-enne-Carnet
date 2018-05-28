@@ -280,11 +280,16 @@
 
                 <h2>Remarques, anecdotes ...</h2>
                 <textarea class="composition de l'Amorce" id="composition de l'Amorce"></textarea></div>
-                
-				<div style="text-align:center;"><button type="button" class="btn-btn-primary col-lg-6">Valider</button>
+                <br /> <br /> <br />
+				<div style="text-align:center;">
+					<button type="button" class="btn-btn-primary col-lg-6">Valider</button>
 				</div>
-		<?php
-		include("la_perche_bassenne.db")
+<?php
+    try {
+        $bdd = new \PDO("sqlite:bdd.sqlite");
+    } catch(Exception $e) {
+        echo "Error BDD : $e";
+    }
 ?>
 
     <!-- jQuery -->
