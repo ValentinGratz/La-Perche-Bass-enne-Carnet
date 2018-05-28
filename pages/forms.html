@@ -87,6 +87,12 @@
                 <div class="col-lg-12">
                     <h1 class="page-header">Formulaire</h1>
                 </div>
+				<div class="col-lg-12">
+					<h1>Jour</h1><br/>
+							Date : <input type="date">
+							Lieu : <input type="text" id="lieu" class="form">
+							Durée :<input type="text" id="durée" class="form">
+				</div>
                 <div class="col-lg-6">
                         <h1>Météo</h1>
                         Temps (soleil, nuages, pluie...)<br />
@@ -275,7 +281,12 @@
                 <h2>Remarques, anecdotes ...</h2>
                 <textarea class="composition de l'Amorce" id="composition de l'Amorce"></textarea></div>
                 
-		<button type="button" class="btn-btn-primary">Valider</button>
+				<div style="text-align:center;"><button type="button" class="btn-btn-primary col-lg-6">Valider</button>
+				</div>
+		<?php
+		include("la_perche_bassenne.db")
+?>
+
     <!-- jQuery -->
     <script src="../vendor/jquery/jquery.min.js"></script>
 
