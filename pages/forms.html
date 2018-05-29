@@ -286,9 +286,10 @@
 				</div>
 <?php
     try {
-        $bdd = new \PDO("sqlite:bdd.sqlite");
+        $bdd = new \PDO("sqlite:la_perche_bassenne.sqlite");
+		echo "ok";
     } catch(Exception $e) {
-        echo "Error BDD : $e";
+        echo "Error BDD : $e->getMessage()";
     }
 ?>
 
