@@ -109,7 +109,14 @@
  <tbody><tr style="mso-yfti-irow:0;mso-yfti-firstrow:yes;mso-yfti-lastrow:yes">
   <td style="width:162.6pt;padding:0cm 5.4pt 0cm 5.4pt" width="217" valign="top">
   <p class="MsoNormal" style="margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-  normal">Date&nbsp;: (Résultat requête)</p>
+  normal">Date&nbsp;: 
+<!--- ouverture de la base --->
+  <php
+$base = sqlite_open ("la_perche_basseenne.sqlite")
+$requete = "SELECT*from(Jour)" WHERE="date";
+>
+<!--- FIN ---> (résultat de la requete)
+</p>
   </td>
   <td style="width:233.9pt;padding:0cm 5.4pt 0cm 5.4pt" width="312" valign="top">
   <p class="MsoNormal" style="margin-bottom:0cm;margin-bottom:.0001pt;line-height:
