@@ -13,6 +13,7 @@ Fichier réalisé à l'aide d'un template bootstrap.
   * v1.0 : Version web en local
   * v1.0 Build 1 : Version web partie html réalisée uniquement
   * v1.0 Build 4 : page formulaire, suivi mises en forme, refonte de la bdd en sqlite
+  * v1.0 Build 5 : Modification du titre des pages + guide d'utilisation rédigé
 
 ## Travail restant
 ### Niveau html :
