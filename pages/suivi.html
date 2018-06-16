@@ -120,7 +120,9 @@ $requete = "SELECT*from(Jour)" WHERE="date";
   </td>
   <td style="width:233.9pt;padding:0cm 5.4pt 0cm 5.4pt" width="312" valign="top">
   <p class="MsoNormal" style="margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-  normal">Lieu&nbsp;: (Résultat requête)</p>
+  normal">Lieu&nbsp;: <?php 
+  SELECT COUNT(*) FROM (SELECT `Lieu`,* FROM `Jour` ORDER BY `_rowid_` ASC);
+	?> (résultat de la requete)
   </td>
   <td style="width:7.0cm;padding:0cm 5.4pt 0cm 5.4pt" width="265" valign="top">
   <p class="MsoNormal" style="margin-bottom:0cm;margin-bottom:.0001pt;line-height:
@@ -250,13 +252,13 @@ $requete = "SELECT*from(Jour)" WHERE="date";
  </tr>
 </tbody></table>
 
-<p class="MsoNormal" style="margin-left:155.95pt"><o:p>&nbsp;</o:p></p>
+<p class="MsoNormal" style="margin-left:100pt"><o:p>&nbsp;</o:p></p>
 
 <table class="MsoTableGrid" style="margin-left:155.95pt;border-collapse:collapse;border:none;mso-yfti-tbllook:
  1184;mso-padding-alt:0cm 5.4pt 0cm 5.4pt;mso-border-insideh:none;mso-border-insidev:
  none" cellspacing="0" cellpadding="0" border="0">
  <tbody><tr style="mso-yfti-irow:0;mso-yfti-firstrow:yes">
-  <td style="width:283.1pt;border:none;border-bottom:solid windowtext 1.0pt;
+  <td style="width:21.6pt;border:none;border-bottom:solid windowtext 1.0pt;
   mso-border-bottom-alt:solid windowtext .5pt;padding:0cm 5.4pt 0cm 5.4pt" width="377" valign="top">
   <p class="MsoNormal" style="margin-bottom:0cm;margin-bottom:.0001pt;
   text-align:center;line-height:normal" align="center"><b style="mso-bidi-font-weight:normal">Composition
