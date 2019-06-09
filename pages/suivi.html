@@ -92,6 +92,27 @@
             
 			<!-- TABLEAU -->
 
+<?php
+try
+{
+	// On se connecte à MySQL
+	$bdd=new PDO('mysql:host=localhost;dbname=valenti1_carnetpeche.sqlcharset=utf8';'root';'');
+}
+catch(Exception $e)
+{
+
+	$reponse=$bdd->query('SELECT,FROM,WHERE')
+	
+	while ($donnees=$reponse ->fetch())
+	{
+		echo $donnees['moi']; 'appartient à' . $donnees ['possesseur']. '<br/>';
+	}
+	
+	$ reponse -> closeCursor();
+}
+?>
+
+
 			<center>
 			Choix de la date : <select value="suivi">
 				<option value="29/05/2018">29/05/2018</option>
