@@ -15,6 +15,7 @@ Fichier réalisé à l'aide d'un template bootstrap.
   * v1.0 Build 4 : page formulaire, suivi mises en forme, refonte de la bdd en sqlite
   * v1.0 Build 5 : Modification du titre des pages + guide d'utilisation rédigé
   * v1.0 Build 6 : Modification de nom de deux champs du formulaire
+  * v1.0 Build 7 : changement de format BDD, au format SQL
 
 ## Travail restant
 ### Niveau html :

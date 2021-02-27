@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>La Perche Basséenne v1.0 Build 5 - Accueil</title>
+    <title>La Perche Basséenne v1.0 Build 7 - Accueil</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -67,13 +67,13 @@
                             <!-- /input-group -->
                         </li>
                         <li>
-                            <a href="index.html"><i class="fa fa-dashboard fa-fw"></i> Accueil</a>
+                            <a href="index.php"><i class="fa fa-dashboard fa-fw"></i> Accueil</a>
                         </li>
                         <li>
-                            <a href="forms.html"><i class="fa fa-table fa-fw"></i> Formulaire</a>
+                            <a href="forms.php"><i class="fa fa-table fa-fw"></i> Formulaire</a>
                         </li>
                         <li>
-                            <a href="suivi.html"><i class="fa fa-edit fa-fw"></i> Suivi</a>
+                            <a href="suivi.php"><i class="fa fa-edit fa-fw"></i> Suivi</a>
                         </li>
                     </ul>
                 </div>

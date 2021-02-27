@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
 
@@ -92,6 +92,9 @@
             
 			<!-- TABLEAU -->
 
+
+
+
 			<center>
 			Choix de la date : <select value="suivi">
 				<option value="29/05/2018">29/05/2018</option>
@@ -112,8 +115,7 @@
   normal">Date&nbsp;: 
 <!--- ouverture de la base --->
   <?php
-$base = sqlite_open ("la_perche_basseenne.sqlite")
-$requete = "SELECT*from(Jour)" WHERE="date";
+    echo $date;
 	?>
 <!--- FIN ---> (résultat de la requete)
 </p>
