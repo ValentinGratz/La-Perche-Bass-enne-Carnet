@@ -1,3 +1,7 @@
+<?php
+
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -26,9 +30,7 @@
     <!-- Custom Fonts -->
     <link href="../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
+    
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
@@ -115,16 +117,14 @@
   normal">Date&nbsp;: 
 <!--- ouverture de la base --->
   <?php
-    echo $date;
+   /* echo $date;*/
 	?>
 <!--- FIN ---> (résultat de la requete)
 </p>
   </td>
   <td style="width:233.9pt;padding:0cm 5.4pt 0cm 5.4pt" width="312" valign="top">
   <p class="MsoNormal" style="margin-bottom:0cm;margin-bottom:.0001pt;line-height:
-  normal">Lieu&nbsp;: <?php 
-  SELECT COUNT(*) FROM (SELECT `Lieu`,* FROM `Jour` ORDER BY `_rowid_` ASC);
-	?> (résultat de la requete)
+  normal">Lieu&nbsp;:  (résultat de la requete)
   </td>
   <td style="width:7.0cm;padding:0cm 5.4pt 0cm 5.4pt" width="265" valign="top">
   <p class="MsoNormal" style="margin-bottom:0cm;margin-bottom:.0001pt;line-height:
