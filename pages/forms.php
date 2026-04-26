@@ -1,45 +1,21 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="fr">
 
 <head>
-
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <title>La Perche Basséenne v1.0 Build 7 - Formulaire</title>
 
-    <title>La Perche Basséenne v1.0 Build 5 - Formulaire</title>
-
-    <!-- Bootstrap Core CSS -->
     <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- MetisMenu CSS -->
     <link href="../vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
-
-    <!-- Custom CSS -->
     <link href="../dist/css/sb-admin-2.css" rel="stylesheet">
-
-    <!-- Morris Charts CSS -->
-    <link href="../vendor/morrisjs/morris.css" rel="stylesheet">
-
-    <!-- Custom Fonts -->
     <link href="../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
 </head>
 
 <body>
-
     <div id="wrapper">
-
-        <!-- Navigation -->
         <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -48,9 +24,8 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.html">La Perche Basséenne</a>
+                <a class="navbar-brand" href="index.php">La Perche Basséenne</a>
             </div>
-            <!-- /.navbar-top-links -->
 
             <div class="navbar-default sidebar" role="navigation">
                 <div class="sidebar-nav navbar-collapse">
@@ -59,257 +34,205 @@
                             <div class="input-group custom-search-form">
                                 <input type="text" class="form-control" placeholder="Search...">
                                 <span class="input-group-btn">
-                                <button class="btn btn-default" type="button">
-                                    <i class="fa fa-search"></i>
-                                </button>
-                            </span>
+                                    <button class="btn btn-default" type="button"><i class="fa fa-search"></i></button>
+                                </span>
                             </div>
-                            <!-- /input-group -->
                         </li>
-                        <li>
-                            <a href="index.html"><i class="fa fa-dashboard fa-fw"></i> Accueil</a>
-                        </li>
-                        <li>
-                            <a href="forms.html"><i class="fa fa-table fa-fw"></i> Formulaire</a>
-                        </li>
-                        <li>
-                            <a href="suivi.html"><i class="fa fa-edit fa-fw"></i> Suivi</a>
-                        </li>
+                        <li><a href="index.php"><i class="fa fa-dashboard fa-fw"></i> Accueil</a></li>
+                        <li><a href="forms.php"><i class="fa fa-table fa-fw"></i> Formulaire</a></li>
+                        <li><a href="suivi.php"><i class="fa fa-edit fa-fw"></i> Suivi</a></li>
                     </ul>
                 </div>
-                <!-- /.sidebar-collapse -->
             </div>
-            <!-- /.navbar-static-side -->
         </nav>
 
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">Formulaire</h1>
+                    <h1 class="page-header">Formulaire de Saisie</h1>
                 </div>
-				<div class="col-lg-12">
-					<h1>Jour</h1><br/>
-							Date : <input type="date">
-									Lieu : <input type="text" id="lieu" class="form">
-											Durée :<input type="text" id="durée" class="form">
-				</div>
-                <div class="col-lg-6">
-                        <h1>Météo</h1>
-                        Temps (soleil, nuages, pluie...)<br />
-                            <select value="temps">
-                                <option value="soleil">Soleil</li>
-                                <option value="nuages">Nuages</li>
-                                <option value="pluie">pluie</li>
-                                <option value="orageux">orageux</li>
-                            </select>
-                        <br />
-                        <br />
-                        Direction du vent<br />
-                            <select value="temps">
-                                <option value="Nord">Nord</li>
-                                <option value="Nord-Est">Nord-Est</li>
-                                <option value="Nord-Ouest">Nord-Ouest</li>
-                                <option value="Sud">Sud</li>
-                                <option value="Sud-Est">Sud-Est</li>
-                                <option value="Sud-Ouest">Sud-Ouest</li>
-                            </select>
-                        <br />
-                        <br />
-                        Force du vent<br />
-                            <select value="temps">
-                                <option value="faible">faible</li>
-                                <option value="modéré">modéré</li>
-                                <option value="fort">fort</li>
-                            </select>
-                        <br />
-                        <br />
-                        Phase lunaire<br />
-                            <input type="text" id="phase lunaire" class="form-control">
+            </div>
+
+            <?php if (isset($_SESSION['message_succes'])): ?>
+                <div class="alert alert-success alert-dismissible fade in">
+                    <button type="button" class="close" data-dismiss="alert"><span>×</span></button>
+                    <strong>Succès !</strong> <?php echo $_SESSION['message_succes']; unset($_SESSION['message_succes']); ?>
                 </div>
-                <div class="col-lg-6">
-                        <h1>L'eau</h1>
-                        Type<br />
-                            <select value="type">
-                                <option value="canal">canal</li>
-                                <option value="étang">étang</li>
-                                <option value="rivière">rivière</li>
-                            </select>
-                        <br />
-                        <br />
-                        Couleur de l'eau<br />
-                            <input type="text" id="couleur de l'eau" class="form-control">
-                        <br />
-                        <br />
-                        Force du courant<br />
-                            <input type="text" id="force du courant" class="form-control">
-                                            <br />
-                <br />
+            <?php endif; ?>
+
+            <?php if (isset($_SESSION['message_erreur'])): ?>
+                <div class="alert alert-danger alert-dismissible fade in">
+                    <button type="button" class="close" data-dismiss="alert"><span>×</span></button>
+                    <strong>Erreur !</strong> <?php echo $_SESSION['message_erreur']; unset($_SESSION['message_erreur']); ?>
+                </div>
+            <?php endif; ?>
+
+            <form method="POST" action="traiter_formulaire.php">
+                <!-- JOUR -->
+                <div class="col-lg-12">
+                    <h3>Jour</h3><br/>
+                    <div class="form-group">
+                        <label>Date :</label>
+                        <input type="date" name="date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Lieu :</label>
+                        <input type="text" name="lieu" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Durée :</label>
+                        <input type="text" name="duree" class="form-control" placeholder="ex: 3h ou 14h-17h">
+                    </div>
                 </div>
 
+                <!-- METEO -->
                 <div class="col-lg-6">
-                        <h1>Le fond</h1>
-                        Type de fond<br />
-                            <select value="type">
-                                <option value="vase">vase</li>
-                                <option value="gravier">gravier</li>
-                            </select>
-                            <br /><br />
-                            Végétation<br />
-                            <input type="text" id="couleur de l'eau" class="form-control"><br />
-                            Profondeur<br />
-                            <input type="text" id="couleur de l'eau" class="form-control">
-                            <br/>
+                    <h3>Météo</h3>
+                    <div class="form-group">
+                        <label>Temps :</label>
+                        <select name="temps" class="form-control">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="soleil">Soleil</option>
+                            <option value="nuages">Nuages</option>
+                            <option value="pluie">Pluie</option>
+                            <option value="orageux">Orageux</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Direction du vent :</label>
+                        <select name="direction_vent" class="form-control">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="Nord">Nord</option>
+                            <option value="Nord-Est">Nord-Est</option>
+                            <option value="Nord-Ouest">Nord-Ouest</option>
+                            <option value="Sud">Sud</option>
+                            <option value="Sud-Est">Sud-Est</option>
+                            <option value="Sud-Ouest">Sud-Ouest</option>
+                            <option value="Est">Est</option>
+                            <option value="Ouest">Ouest</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Force du vent :</label>
+                        <select name="force_vent" class="form-control">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="faible">Faible</option>
+                            <option value="modere">Modéré</option>
+                            <option value="fort">Fort</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Phase lunaire :</label>
+                        <input type="text" name="phase_lunaire" class="form-control" placeholder="ex: Nouvelle lune">
+                    </div>
                 </div>
+
+                <!-- L'EAU -->
                 <div class="col-lg-6">
-                        <h1>Composition de l'Amorce</h1>
-                        <textarea class="composition de l'Amorce" id="composition de l'Amorce"></textarea>
+                    <h3>L'eau</h3>
+                    <div class="form-group">
+                        <label>Type :</label>
+                        <select name="type_eau" class="form-control">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="canal">Canal</option>
+                            <option value="etang">Étang</option>
+                            <option value="riviere">Rivière</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Couleur de l'eau :</label>
+                        <input type="text" name="couleur_eau" class="form-control" placeholder="ex: Marron clair">
+                    </div>
+                    <div class="form-group">
+                        <label>Force du courant :</label>
+                        <input type="text" name="force_courant" class="form-control" placeholder="ex: Faible">
+                    </div>
                 </div>
+
+                <!-- LE FOND -->
                 <div class="col-lg-6">
-                        <h1>Matériel et lignes</h1>
-                        <textarea class="composition de l'Amorce" id="composition de l'Amorce"></textarea>
+                    <h3>Le fond</h3>
+                    <div class="form-group">
+                        <label>Type de fond :</label>
+                        <select name="type_fond" class="form-control">
+                            <option value="">-- Sélectionner --</option>
+                            <option value="vase">Vase</option>
+                            <option value="gravier">Gravier</option>
+                            <option value="sable">Sable</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Végétation :</label>
+                        <input type="text" name="vegetation" class="form-control" placeholder="ex: Algues">
+                    </div>
+                    <div class="form-group">
+                        <label>Profondeur :</label>
+                        <input type="text" name="profondeur" class="form-control" placeholder="ex: 2m">
+                    </div>
                 </div>
-            <br/>
-            <br />
-            <br />
-            <br />
-            <div class="col-lg-12">
-                <h2>Prises</h2>
-                <table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Nombre</th>
-      <th scope="col">Espèce</th>
-      <th scope="col">Taille</th>
-      <th scope="col">poids</th>
-      <th scope="col">Appât</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row"><input type="number" id="nombre" class="form">
-</th>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-  </tr>
-    <tr>
-      <th scope="row"><input type="number" id="nombre" class="form">
-</th>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-  </tr>
-        <tr>
-    <tr>
-      <th scope="row"><input type="number" id="nombre" class="form">
-</th>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-  </tr>
-    <tr>
-      <th scope="row"><input type="number" id="nombre" class="form">
-</th>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-  </tr>
-    <tr>
-      <th scope="row"><input type="number" id="nombre" class="form">
-</th>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-  </tr>
-    <tr>
-      <th scope="row"><input type="number" id="nombre" class="form">
-</th>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-  </tr>
-    <tr>
-      <th scope="row"><input type="number" id="nombre" class="form">
-</th>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-  </tr>
-    <tr>
-      <th scope="row"><input type="number" id="nombre" class="form">
-</th>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-  </tr>
-    <tr>
-      <th scope="row"><input type="number" id="nombre" class="form">
-</th>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-  </tr>
-    <tr>
-      <th scope="row"><input type="number" id="nombre" class="form">
-</th>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-  </tr>
-    <tr>
-      <th scope="row"><input type="number" id="nombre" class="form">
-</th>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-      <td><input type="text" id="espece" class="form"></td>
-  </tr>
-  </tbody>
-</table>
 
+                <!-- COMPOSITION DE L'AMORCE -->
+                <div class="col-lg-6">
+                    <h3>Composition de l'Amorce</h3>
+                    <div class="form-group">
+                        <textarea name="amorce" class="form-control" rows="5" placeholder="Une ligne par ingrédient"></textarea>
+                    </div>
+                </div>
 
-                <h2>Remarques, anecdotes ...</h2>
-                <textarea class="composition de l'Amorce" id="composition de l'Amorce"></textarea></div>
-                <br /> <br /> <br />
-				<div style="text-align:center;">
-					<button type="button" class="btn-btn-primary col-lg-6">Valider</button>
-				</div>
-<?php
-    try {
-        $bdd = new \PDO("sqlite:la_perche_bassenne.sqlite");
-		echo "ok";
-    } catch(Exception $e) {
-        echo "Error BDD : $e->getMessage()";
-    }
-?>
+                <!-- MATERIEL ET LIGNES -->
+                <div class="col-lg-6">
+                    <h3>Matériel et lignes</h3>
+                    <div class="form-group">
+                        <textarea name="materiel" class="form-control" rows="5" placeholder="Une ligne par élément"></textarea>
+                    </div>
+                </div>
 
-    <!-- jQuery -->
+                <!-- PRISES -->
+                <div class="col-lg-12">
+                    <h3>Prises</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Espèce</th>
+                                <th>Taille</th>
+                                <th>Poids</th>
+                                <th>Appât</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php for ($i = 1; $i <= 11; $i++): ?>
+                                <tr>
+                                    <td><input type="number" name="prise_nombre_<?php echo $i; ?>" class="form-control"></td>
+                                    <td><input type="text" name="prise_espece_<?php echo $i; ?>" class="form-control" placeholder="ex: Carpe"></td>
+                                    <td><input type="text" name="prise_taille_<?php echo $i; ?>" class="form-control" placeholder="cm"></td>
+                                    <td><input type="text" name="prise_poids_<?php echo $i; ?>" class="form-control" placeholder="kg"></td>
+                                    <td><input type="text" name="prise_appat_<?php echo $i; ?>" class="form-control" placeholder="ex: Maïs"></td>
+                                </tr>
+                            <?php endfor; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- REMARQUES -->
+                <div class="col-lg-12">
+                    <h3>Remarques, anecdotes ...</h3>
+                    <div class="form-group">
+                        <textarea name="remarques" class="form-control" rows="5" placeholder="Vos observations du jour"></textarea>
+                    </div>
+                </div>
+
+                <!-- BOUTON VALIDATION -->
+                <div class="col-lg-12" style="text-align:center; margin-bottom: 20px;">
+                    <button type="submit" class="btn btn-primary btn-lg">Valider le formulaire</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="../vendor/jquery/jquery.min.js"></script>
-
-    <!-- Bootstrap Core JavaScript -->
     <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
-
-    <!-- Metis Menu Plugin JavaScript -->
     <script src="../vendor/metisMenu/metisMenu.min.js"></script>
-
-    <!-- Morris Charts JavaScript -->
-    <script src="../vendor/raphael/raphael.min.js"></script>
-    <script src="../vendor/morrisjs/morris.min.js"></script>
-    <script src="../data/morris-data.js"></script>
-
-    <!-- Custom Theme JavaScript -->
     <script src="../dist/js/sb-admin-2.js"></script>
-
 </body>
-
 </html>
