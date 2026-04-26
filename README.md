@@ -16,11 +16,13 @@ Fichier réalisé à l'aide d'un template bootstrap.
   * v1.0 Build 5 : Modification du titre des pages + guide d'utilisation rédigé
   * v1.0 Build 6 : Modification de nom de deux champs du formulaire
   * v1.0 Build 7 : changement de format BDD, au format SQL
+    
+    correction de connexion à l'aide de copilot
 
 ## Travail restant
 ### Niveau html :
   * <s>ajout d'un bouton pour valider le formulaire</s>
-  * Activer et faire fonctionner le bouton
+  * <s>Activer et faire fonctionner le bouton</s>
   * faire la page suivi.html qui affiche les données saisie à partie du fichier sql dans un tableau
 ### Niveau SQL :
   * <s>création du fichier sql</s>
