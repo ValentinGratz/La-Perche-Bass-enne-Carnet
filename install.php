@@ -6,8 +6,14 @@
 
 session_start();
 
+// Chemin absolu au dossier racine
+$root_dir = dirname(__DIR__);
+$config_path = $root_dir . '/config.php';
+$install_path = __FILE__;
+$sql_file = $root_dir . '/valenti1_carnetperche.sql';
+
 // Vérifier si déjà installé
-if (file_exists('config.php')) {
+if (file_exists($config_path)) {
     header('Location: pages/index.php');
     exit();
 }
@@ -37,32 +43,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
         $pdo->exec("USE `$dbname`");
 
         // 3. Lire et exécuter le fichier SQL
-        $sql_file = file_get_contents('valenti1_carnetperche.sql');
+        if (!file_exists($sql_file)) {
+            throw new Exception("Fichier SQL non trouvé : $sql_file");
+        }
+        
+        $sql_content = file_get_contents($sql_file);
         
         // Nettoyer le SQL : supprimer les commentaires et les directives phpMyAdmin
         // Supprimer les lignes commençant par -- ou #
-        $sql_file = preg_replace('/^\s*--.*$/m', '', $sql_file);
-        $sql_file = preg_replace('/^\s*#.*$/m', '', $sql_file);
+        $sql_content = preg_replace('/^\s*--.*$/m', '', $sql_content);
+        $sql_content = preg_replace('/^\s*#.*$/m', '', $sql_content);
         
         // Supprimer les commentaires /* ... */
-        $sql_file = preg_replace('/\/\*[^*]*\*+(?:[^\/*][^*]*\*+)*\//s', '', $sql_file);
+        $sql_content = preg_replace('/\/\*[^*]*\*+(?:[^\/*][^*]*\*+)*\//s', '', $sql_content);
         
-        // Supprimer les directives SET et USE (sauf USE pour la base)
-        $sql_file = preg_replace('/^SET\s+.*?;$/m', '', $sql_file);
+        // Supprimer les directives SET et USE
+        $sql_content = preg_replace('/^SET\s+.*?;$/m', '', $sql_content);
+        $sql_content = preg_replace('/^USE\s+.*?;$/m', '', $sql_content);
         
         // Exécuter les requêtes SQL nettoyées
-        $queries = array_filter(array_map('trim', explode(';', $sql_file)));
+        $queries = array_filter(array_map('trim', explode(';', $sql_content)));
         
         foreach ($queries as $query) {
             $query = trim($query);
-            if (!empty($query) && strpos(strtoupper($query), 'USE') !== 0) {
+            if (!empty($query) && strlen($query) > 5) {
                 try {
                     $pdo->exec($query);
                 } catch (Exception $e) {
-                    // Ignorer les erreurs de requêtes vides ou malformées
-                    if (strlen($query) > 5) {
-                        throw $e;
-                    }
+                    // Ignorer les erreurs mineures
+                    error_log("SQL Error: " . $e->getMessage());
                 }
             }
         }
@@ -89,16 +98,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
         $config_content .= "}\n";
         $config_content .= "?>";
 
-        if (file_put_contents('config.php', $config_content)) {
-            // 5. Supprimer le fichier install.php après succès
-            if (file_exists('install.php')) {
-                @unlink('install.php');
-            }
+        if (file_put_contents($config_path, $config_content)) {
             $_SESSION['install_success'] = true;
+            
+            // 5. Supprimer le fichier install.php après succès
+            if (file_exists($install_path)) {
+                @unlink($install_path);
+            }
+            
             header('Location: pages/index.php?installed=1');
             exit();
         } else {
-            $error = 'Impossible de créer le fichier config.php. Vérifiez les permissions du dossier.';
+            $error = 'Impossible de créer le fichier config.php. Vérifiez les permissions du dossier racine.';
         }
 
     } catch (PDOException $e) {
@@ -112,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
 $php_version = phpversion();
 $pdo_available = extension_loaded('pdo');
 $pdo_mysql = extension_loaded('pdo_mysql');
-$writable = is_writable('.');
+$writable = is_writable($root_dir);
 
 ?>
 <!DOCTYPE html>

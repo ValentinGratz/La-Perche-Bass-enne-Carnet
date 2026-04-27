@@ -2,13 +2,15 @@
 /**
  * Redirection automatique vers install.php si config.php n'existe pas
  */
-if (!file_exists('config.php')) {
-    header('Location: install.php');
+$config_path = dirname(__DIR__) . '/config.php';
+
+if (!file_exists($config_path)) {
+    header('Location: ../install.php');
     exit();
 }
 
 // Si config.php existe, charger normalement
-require_once('config.php');
+require_once($config_path);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -47,8 +49,8 @@ require_once('config.php');
                             </div>
                         </li>
                         <li><a href="index.php"><i class="fa fa-dashboard fa-fw"></i> Accueil</a></li>
-                        <li><a href="pages/forms.php"><i class="fa fa-table fa-fw"></i> Formulaire</a></li>
-                        <li><a href="pages/suivi.php"><i class="fa fa-edit fa-fw"></i> Suivi</a></li>
+                        <li><a href="forms.php"><i class="fa fa-table fa-fw"></i> Formulaire</a></li>
+                        <li><a href="suivi.php"><i class="fa fa-edit fa-fw"></i> Suivi</a></li>
                     </ul>
                 </div>
             </div>
