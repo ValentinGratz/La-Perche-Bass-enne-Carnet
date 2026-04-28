@@ -62,9 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
         // Supprimer les commentaires /* ... */
         $sql_content = preg_replace('/\/\*[^*]*\*+(?:[^\/*][^*]*\*+)*\//s', '', $sql_content);
         
+        // Supprimer les directives /*!...*/
+        $sql_content = preg_replace('/\/\*!.*?\*\//s', '', $sql_content);
+        
         // Supprimer les directives SET et USE
-        $sql_content = preg_replace('/^SET\s+.*?;$/m', '', $sql_content);
-        $sql_content = preg_replace('/^USE\s+.*?;$/m', '', $sql_content);
+        $sql_content = preg_replace('/^\s*SET\s+.*?;$/m', '', $sql_content);
+        $sql_content = preg_replace('/^\s*USE\s+.*?;$/m', '', $sql_content);
+        $sql_content = preg_replace('/^\s*START\s+TRANSACTION.*?;$/m', '', $sql_content);
+        $sql_content = preg_replace('/^\s*COMMIT.*?;$/m', '', $sql_content);
         
         // Exécuter les requêtes SQL nettoyées
         $queries = array_filter(array_map('trim', explode(';', $sql_content)));
