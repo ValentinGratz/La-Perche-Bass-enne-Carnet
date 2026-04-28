@@ -6,11 +6,16 @@
 
 session_start();
 
+// Chemin absolu au dossier racine
+$root_dir = dirname(__DIR__);
+$config_path = $root_dir . '/config.php';
+$install_path = __FILE__;
+$sql_file = $root_dir . '/valenti1_carnetperche.sql';
+
 // Vérifier si déjà installé
-if (file_exists('config.php')) {
-    $config_exists = true;
-} else {
-    $config_exists = false;
+if (file_exists($config_path)) {
+    header('Location: pages/index.php');
+    exit();
 }
 
 $step = isset($_GET['step']) ? (int)$_GET['step'] : 1;
@@ -38,16 +43,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
         $pdo->exec("USE `$dbname`");
 
         // 3. Lire et exécuter le fichier SQL
-        $sql = file_get_contents('valenti1_carnetperche.sql');
+        if (!file_exists($sql_file)) {
+            throw new Exception("Fichier SQL non trouvé : $sql_file");
+        }
         
-        // Supprimer les commentaires et les instructions non-SQL
-        $sql = preg_replace('/^--|^#|^\/\*/m', '', $sql);
+        $sql_content = file_get_contents($sql_file);
         
-        // Exécuter les requêtes
-        $queries = array_filter(array_map('trim', explode(';', $sql)));
+        // Nettoyer le SQL : supprimer les commentaires et les directives phpMyAdmin
+        // Supprimer les lignes commençant par -- ou #
+        $sql_content = preg_replace('/^\s*--.*$/m', '', $sql_content);
+        $sql_content = preg_replace('/^\s*#.*$/m', '', $sql_content);
+        
+        // Supprimer les commentaires /* ... */
+        $sql_content = preg_replace('/\/\*[^*]*\*+(?:[^\/*][^*]*\*+)*\//s', '', $sql_content);
+        
+        // Supprimer les directives SET et USE
+        $sql_content = preg_replace('/^SET\s+.*?;$/m', '', $sql_content);
+        $sql_content = preg_replace('/^USE\s+.*?;$/m', '', $sql_content);
+        
+        // Exécuter les requêtes SQL nettoyées
+        $queries = array_filter(array_map('trim', explode(';', $sql_content)));
+        
         foreach ($queries as $query) {
-            if (!empty($query)) {
-                $pdo->exec($query);
+            $query = trim($query);
+            if (!empty($query) && strlen($query) > 5) {
+                try {
+                    $pdo->exec($query);
+                } catch (Exception $e) {
+                    // Ignorer les erreurs mineures
+                    error_log("SQL Error: " . $e->getMessage());
+                }
             }
         }
 
@@ -73,12 +98,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
         $config_content .= "}\n";
         $config_content .= "?>";
 
-        if (file_put_contents('config.php', $config_content)) {
+        if (file_put_contents($config_path, $config_content)) {
             $_SESSION['install_success'] = true;
-            header('Location: install.php?step=4');
+            
+            // 5. Supprimer le fichier install.php après succès
+            if (file_exists($install_path)) {
+                @unlink($install_path);
+            }
+            
+            header('Location: pages/index.php?installed=1');
             exit();
         } else {
-            $error = 'Impossible de créer le fichier config.php. Vérifiez les permissions du dossier.';
+            $error = 'Impossible de créer le fichier config.php. Vérifiez les permissions du dossier racine.';
         }
 
     } catch (PDOException $e) {
@@ -92,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
 $php_version = phpversion();
 $pdo_available = extension_loaded('pdo');
 $pdo_mysql = extension_loaded('pdo_mysql');
-$writable = is_writable('.');
+$writable = is_writable($root_dir);
 
 ?>
 <!DOCTYPE html>
@@ -253,6 +284,8 @@ $writable = is_writable('.');
             cursor: pointer;
             border: none;
             transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
         }
         .btn-primary {
             background: #667eea;
@@ -261,6 +294,7 @@ $writable = is_writable('.');
         .btn-primary:hover {
             background: #764ba2;
             color: white;
+            text-decoration: none;
         }
         .btn-secondary {
             background: #e9ecef;
@@ -269,6 +303,7 @@ $writable = is_writable('.');
         .btn-secondary:hover {
             background: #dee2e6;
             color: #333;
+            text-decoration: none;
         }
         .alert {
             border-radius: 5px;
@@ -328,6 +363,7 @@ $writable = is_writable('.');
                     <li>✓ Créer la base de données MySQL</li>
                     <li>✓ Créer les tables nécessaires</li>
                     <li>✓ Générer votre fichier config.php</li>
+                    <li>✓ Supprimer automatiquement ce wizard</li>
                 </ul>
                 <div class="mamp-tips">
                     <strong>💡 Pour MAMP :</strong><br>
@@ -336,7 +372,7 @@ $writable = is_writable('.');
                 </div>
             </div>
             <div class="button-group">
-                <a href="pages/index.php" class="btn btn-secondary">Annuler</a>
+                <span></span>
                 <a href="install.php?step=2" class="btn btn-primary">Suivant →</a>
             </div>
         <?php endif; ?>
@@ -450,7 +486,8 @@ $writable = is_writable('.');
                     <strong>✓ Fait :</strong><br>
                     • Base de données créée<br>
                     • Tables importées<br>
-                    • config.php généré
+                    • config.php généré<br>
+                    • install.php supprimé
                 </div>
             </div>
             <div class="button-group" style="justify-content: center;">
