@@ -28,6 +28,8 @@ Fichier réalisé à l'aide d'un template bootstrap.
 ### Niveau PHP :
   * <s>insertion en php pour le formulaire (liaison entre la page et le fichier sql)</s>
 
+  Ne trouve plus le fichier sql à l'étape 2 du wizard
+
 # © COPYRIGHT
 Ce projet est personnel, donc aucune copie partielle ou totale n'est autorisée. 
 Je publie ce projet pour seulement avoir votre aide, n'étant que débutant en programmation. 
