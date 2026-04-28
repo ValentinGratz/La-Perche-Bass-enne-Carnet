@@ -10,7 +10,12 @@ session_start();
 $root_dir = dirname(__DIR__);
 $config_path = $root_dir . '/config.php';
 $install_path = __FILE__;
-$sql_file = $root_dir . '/valenti1_carnetperche.sql';
+
+// Chercher le fichier SQL
+$sql_file = null;
+if (file_exists($root_dir . '/valenti1_carnetperche.sql')) {
+    $sql_file = $root_dir . '/valenti1_carnetperche.sql';
+}
 
 // Vérifier si déjà installé
 if (file_exists($config_path)) {
@@ -43,8 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
         $pdo->exec("USE `$dbname`");
 
         // 3. Lire et exécuter le fichier SQL
-        if (!file_exists($sql_file)) {
-            throw new Exception("Fichier SQL non trouvé : $sql_file");
+        if (!$sql_file || !file_exists($sql_file)) {
+            throw new Exception("Fichier SQL non trouvé. Assurez-vous que le fichier 'valenti1_carnetperche.sql' se trouve à la racine du projet.");
         }
         
         $sql_content = file_get_contents($sql_file);
@@ -64,11 +69,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
         // Exécuter les requêtes SQL nettoyées
         $queries = array_filter(array_map('trim', explode(';', $sql_content)));
         
+        $query_count = 0;
         foreach ($queries as $query) {
             $query = trim($query);
             if (!empty($query) && strlen($query) > 5) {
                 try {
                     $pdo->exec($query);
+                    $query_count++;
                 } catch (Exception $e) {
                     // Ignorer les erreurs mineures
                     error_log("SQL Error: " . $e->getMessage());
@@ -124,6 +131,7 @@ $php_version = phpversion();
 $pdo_available = extension_loaded('pdo');
 $pdo_mysql = extension_loaded('pdo_mysql');
 $writable = is_writable($root_dir);
+$sql_exists = file_exists($root_dir . '/valenti1_carnetperche.sql');
 
 ?>
 <!DOCTYPE html>
@@ -421,11 +429,21 @@ $writable = is_writable($root_dir);
                         <small><?php echo $writable ? 'Dossier accessible' : 'Impossible d\'écrire'; ?></small>
                     </div>
                 </div>
+
+                <div class="check-item">
+                    <div class="check-icon <?php echo $sql_exists ? 'success' : 'error'; ?>">
+                        <?php echo $sql_exists ? '✓' : '✗'; ?>
+                    </div>
+                    <div class="check-label">
+                        <strong>Fichier SQL</strong>
+                        <small><?php echo $sql_exists ? 'Trouvé (valenti1_carnetperche.sql)' : 'Non trouvé'; ?></small>
+                    </div>
+                </div>
             </div>
 
             <div class="button-group">
                 <a href="install.php?step=1" class="btn btn-secondary">← Précédent</a>
-                <a href="install.php?step=3" class="btn btn-primary <?php echo ($php_version && $pdo_available && $pdo_mysql && $writable) ? '' : 'disabled'; ?>" <?php echo ($php_version && $pdo_available && $pdo_mysql && $writable) ? '' : 'onclick="return false;"'; ?>>Suivant →</a>
+                <a href="install.php?step=3" class="btn btn-primary <?php echo ($php_version && $pdo_available && $pdo_mysql && $writable && $sql_exists) ? '' : 'disabled'; ?>" <?php echo ($php_version && $pdo_available && $pdo_mysql && $writable && $sql_exists) ? '' : 'onclick="return false;"'; ?>>Suivant →</a>
             </div>
         <?php endif; ?>
 
