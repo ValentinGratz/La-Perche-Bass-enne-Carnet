@@ -1,121 +1,111 @@
--- phpMyAdmin SQL Dump
--- version 4.8.3
--- https://www.phpmyadmin.net/
---
--- Hôte : localhost:3306
--- Généré le :  mar. 30 avr. 2019 à 14:47
--- Version du serveur :  10.3.14-MariaDB
--- Version de PHP :  7.2.7
+-- ============================================================
+-- La Perche Basséenne - Base de Données
+-- Version optimisée avec types de données corrects
+-- ============================================================
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
-SET time_zone = "+00:00";
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
 
+-- ============================================================
+-- TABLE JOUR (Sortie de pêche)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `Jour` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `Date` DATE NOT NULL UNIQUE,
+  `Lieu` VARCHAR(255),
+  `Duree` VARCHAR(100),
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+-- ============================================================
+-- TABLE METEO
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `Meteo` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `jour_id` INT NOT NULL,
+  `Temps` VARCHAR(100),
+  `Direction du vent` VARCHAR(50),
+  `Force du vent` VARCHAR(50),
+  `phase lunaire` VARCHAR(100),
+  FOREIGN KEY (`jour_id`) REFERENCES `Jour`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Base de données :  `valenti1_carnetperche`
---
+-- ============================================================
+-- TABLE L'EAU
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `l'eau` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `jour_id` INT NOT NULL,
+  `Type` VARCHAR(100),
+  `couleur de l'eau` VARCHAR(100),
+  `Force du courant` VARCHAR(100),
+  FOREIGN KEY (`jour_id`) REFERENCES `Jour`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------
+-- ============================================================
+-- TABLE LE FOND
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `le fond` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `jour_id` INT NOT NULL,
+  `type de fond` VARCHAR(100),
+  `végétation` TEXT,
+  `profondeur` VARCHAR(100),
+  FOREIGN KEY (`jour_id`) REFERENCES `Jour`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Structure de la table `Composition de l'amorce`
---
+-- ============================================================
+-- TABLE AMORCE
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `Composition de l'amorce` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `jour_id` INT NOT NULL,
+  `Composition de l'amorce` LONGTEXT,
+  FOREIGN KEY (`jour_id`) REFERENCES `Jour`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `Composition de l'amorce` (
-  `Composition de l'amorce` text NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+-- ============================================================
+-- TABLE MATERIEL
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `Materiel et lignes` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `jour_id` INT NOT NULL,
+  `Materiel et lignes` LONGTEXT,
+  FOREIGN KEY (`jour_id`) REFERENCES `Jour`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------
+-- ============================================================
+-- TABLE PRISES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `Prises` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `jour_id` INT NOT NULL,
+  `Nombre` VARCHAR(50),
+  `Espece` VARCHAR(100),
+  `Taille` VARCHAR(50),
+  `poids` VARCHAR(50),
+  `Appât` VARCHAR(100),
+  FOREIGN KEY (`jour_id`) REFERENCES `Jour`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Structure de la table `Jour`
---
+-- ============================================================
+-- TABLE REMARQUES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `Remarques, anecdotes...` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `jour_id` INT NOT NULL,
+  `Remarques, anecdotes...` LONGTEXT,
+  FOREIGN KEY (`jour_id`) REFERENCES `Jour`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `Jour` (
-  `Date` date NOT NULL,
-  `Lieu` int(11) NOT NULL,
-  `Durée` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `l'eau`
---
-
-CREATE TABLE `l'eau` (
-  `Type` int(11) NOT NULL,
-  `couleur de l'eau` int(11) NOT NULL,
-  `Force du courant` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `le fond`
---
-
-CREATE TABLE `le fond` (
-  `type de fond` int(11) NOT NULL,
-  `végétation` int(11) NOT NULL,
-  `profondeur` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `Materiel et lignes`
---
-
-CREATE TABLE `Materiel et lignes` (
-  `Materiel et lignes` text NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `Meteo`
---
-
-CREATE TABLE `Meteo` (
-  `Temps` int(11) NOT NULL,
-  `Direction du vent` int(11) NOT NULL,
-  `Force du vent` int(11) NOT NULL,
-  `phase lunaire` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `Prises`
---
-
-CREATE TABLE `Prises` (
-  `Nombre` int(11) NOT NULL,
-  `Espece` int(11) NOT NULL,
-  `Taille` int(11) NOT NULL,
-  `poids` int(11) NOT NULL,
-  `Appât` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `Remarques, anecdotes...`
---
-
-CREATE TABLE `Remarques, anecdotes...` (
-  `Remarques, anecdotes...` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+-- ============================================================
+-- INDEX pour meilleures performances
+-- ============================================================
+CREATE INDEX idx_jour_date ON `Jour`(`Date`);
+CREATE INDEX idx_meteo_jour ON `Meteo`(`jour_id`);
+CREATE INDEX idx_eau_jour ON `l'eau`(`jour_id`);
+CREATE INDEX idx_fond_jour ON `le fond`(`jour_id`);
+CREATE INDEX idx_amorce_jour ON `Composition de l'amorce`(`jour_id`);
+CREATE INDEX idx_materiel_jour ON `Materiel et lignes`(`jour_id`);
+CREATE INDEX idx_prises_jour ON `Prises`(`jour_id`);
+CREATE INDEX idx_remarques_jour ON `Remarques, anecdotes...`(`jour_id`);

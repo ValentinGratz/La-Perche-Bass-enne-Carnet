@@ -2,15 +2,17 @@
 /**
  * Wizard d'Installation - La Perche Basséenne
  * Style WordPress - Configuration complète de la BDD
+ * 
+ * CORRECTION : Gestion correcte des chemins Windows/Linux (DIRECTORY_SEPARATOR)
  */
 
 session_start();
 
-// Chemin absolu au dossier racine
+// Chemin absolu au dossier racine - Gestion correcte pour Windows et Linux
 $root_dir = dirname(__DIR__);
-$config_path = $root_dir . '/config.php';
+$config_path = $root_dir . DIRECTORY_SEPARATOR . 'config.php';
 $install_path = __FILE__;
-$sql_file = $root_dir . '/valenti1_carnetperche.sql';
+$sql_file = $root_dir . DIRECTORY_SEPARATOR . 'valenti1_carnetperche.sql';
 
 // Vérifier si déjà installé
 if (file_exists($config_path)) {
@@ -50,14 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
         $sql_content = file_get_contents($sql_file);
         
         // Nettoyer le SQL : supprimer les commentaires et les directives phpMyAdmin
-        // Supprimer les lignes commençant par -- ou #
         $sql_content = preg_replace('/^\s*--.*$/m', '', $sql_content);
         $sql_content = preg_replace('/^\s*#.*$/m', '', $sql_content);
-        
-        // Supprimer les commentaires /* ... */
         $sql_content = preg_replace('/\/\*[^*]*\*+(?:[^\/*][^*]*\*+)*\//s', '', $sql_content);
-        
-        // Supprimer les directives SET et USE
         $sql_content = preg_replace('/^SET\s+.*?;$/m', '', $sql_content);
         $sql_content = preg_replace('/^USE\s+.*?;$/m', '', $sql_content);
         
@@ -70,7 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
                 try {
                     $pdo->exec($query);
                 } catch (Exception $e) {
-                    // Ignorer les erreurs mineures
                     error_log("SQL Error: " . $e->getMessage());
                 }
             }
@@ -194,43 +190,42 @@ $writable = is_writable($root_dir);
             font-weight: bold;
             color: white;
             background: #ddd;
-            position: relative;
+            transition: all 0.3s ease;
         }
         .step-dot.active {
             background: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
         }
         .step-dot.completed {
             background: #28a745;
         }
-        .step-content {
-            min-height: 250px;
-        }
         .check-item {
             display: flex;
             align-items: center;
-            padding: 10px 0;
+            padding: 15px 0;
             border-bottom: 1px solid #f0f0f0;
         }
         .check-item:last-child {
             border-bottom: none;
         }
         .check-icon {
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 20px;
             margin-right: 15px;
-            font-size: 18px;
+            font-weight: bold;
         }
         .check-icon.success {
             background: #d4edda;
-            color: #28a745;
+            color: #155724;
         }
         .check-icon.error {
             background: #f8d7da;
-            color: #dc3545;
+            color: #721c24;
         }
         .check-label {
             flex: 1;
@@ -238,52 +233,53 @@ $writable = is_writable($root_dir);
         .check-label strong {
             display: block;
             color: #333;
+            margin-bottom: 5px;
         }
         .check-label small {
             color: #666;
-            display: block;
-            margin-top: 3px;
+            font-size: 12px;
+        }
+        .form-group {
+            margin-bottom: 20px;
         }
         .form-group label {
-            font-weight: 600;
-            color: #333;
+            display: block;
             margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
         }
         .form-control {
+            padding: 10px 12px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            padding: 10px 15px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
         }
         .form-control:focus {
             border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
         }
         .help-text {
+            display: block;
+            margin-top: 6px;
+            color: #999;
             font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        .success-icon {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .success-icon i {
-            font-size: 60px;
-            color: #28a745;
         }
         .button-group {
             display: flex;
+            justify-content: space-between;
             gap: 10px;
             margin-top: 30px;
-            justify-content: space-between;
         }
         .btn {
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-weight: 600;
-            cursor: pointer;
+            padding: 10px 25px;
             border: none;
-            transition: all 0.3s;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
         }
@@ -291,23 +287,46 @@ $writable = is_writable($root_dir);
             background: #667eea;
             color: white;
         }
-        .btn-primary:hover {
-            background: #764ba2;
-            color: white;
-            text-decoration: none;
+        .btn-primary:hover:not(.disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
         }
         .btn-secondary {
-            background: #e9ecef;
-            color: #333;
+            background: #6c757d;
+            color: white;
         }
         .btn-secondary:hover {
-            background: #dee2e6;
-            color: #333;
-            text-decoration: none;
+            background: #5a6268;
+        }
+        .btn.disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .step-content {
+            min-height: 300px;
+            margin-bottom: 20px;
         }
         .alert {
             border-radius: 5px;
             margin-bottom: 20px;
+            padding: 15px;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
         }
         .welcome-text {
             color: #666;
@@ -341,7 +360,7 @@ $writable = is_writable($root_dir);
             <div class="step-dot <?php echo ($step >= 1) ? 'active' : ''; ?>">1</div>
             <div class="step-dot <?php echo ($step >= 2) ? 'active' : ''; ?>">2</div>
             <div class="step-dot <?php echo ($step >= 3) ? 'active' : ''; ?>">3</div>
-            <div class="step-dot <?php echo ($step >= 4) ? 'completed' : ''; ?>"><i class="fa fa-check"></i></div>
+            <div class="step-dot <?php echo ($step >= 4) ? 'completed' : ''; ?>">✓</div>
         </div>
 
         <!-- Barre de progression -->
