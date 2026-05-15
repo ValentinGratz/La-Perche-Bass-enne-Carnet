@@ -19,18 +19,28 @@ Fichier réalisé à l'aide d'un template bootstrap.
     
     correction de connexion à l'aide de copilot
 
+### v1.7 stable : version finie stable et utilisable
+- 🐛 Fix: Corrections critiques du système d'installation
+- 🐛 Fix: Correction chemin Windows/Linux (DIRECTORY_SEPARATOR)
+- ✨ Feature: Wizard d'installation type WordPress
+- 🗄️ Improvement: BDD restructurée avec clés étrangères
+- 📊 Improvement: Affichage des données filtrées correctement par date
+- 🔐 Improvement: Gestion sécurisée des identifiants MAMP
+
 ## Travail restant
 ### Niveau html :
   * <s>ajout d'un bouton pour valider le formulaire</s>
   * <s>Activer et faire fonctionner le bouton</s>
-  * faire la page suivi.html qui affiche les données saisie à partie du fichier sql dans un tableau
+  * <s>faire la page suivi.html qui affiche les données saisie à partie du fichier sql dans un tableau</s>
 ### Niveau SQL :
   * <s>création du fichier sql</s>
   * <s>insertion du fichier dans le index.html</s>
 ### Niveau PHP :
   * <s>insertion en php pour le formulaire (liaison entre la page et le fichier sql)</s>
 
-  Ne trouve plus le fichier sql à l'étape 2 du wizard
+  <s>Ne trouve plus le fichier sql à l'étape 2 du wizard</s>
+
+  Reste juste le css de la page d'accueil une fois le wizard fini le css cassé, mais reviens quand on rafraichi. 
 
 # © COPYRIGHT
 Ce projet est personnel, donc aucune copie partielle ou totale n'est autorisée. 
