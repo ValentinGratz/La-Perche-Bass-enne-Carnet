@@ -3,13 +3,13 @@
  * Wizard d'Installation - La Perche Basséenne
  * Style WordPress - Configuration complète de la BDD
  * 
- * CORRECTION : Gestion correcte des chemins Windows/Linux (DIRECTORY_SEPARATOR)
+ * VERSION ROBUSTE avec debugging et fallback chemins
  */
 
 session_start();
 
-// Chemin absolu au dossier racine - Gestion correcte pour Windows et Linux
-$root_dir = dirname(__DIR__);
+// Chemin absolu au dossier racine (où est install.php)
+$root_dir = __DIR__;
 $config_path = $root_dir . DIRECTORY_SEPARATOR . 'config.php';
 $install_path = __FILE__;
 $sql_file = $root_dir . DIRECTORY_SEPARATOR . 'valenti1_carnetperche.sql';
@@ -46,26 +46,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
 
         // 3. Lire et exécuter le fichier SQL
         if (!file_exists($sql_file)) {
-            throw new Exception("Fichier SQL non trouvé : $sql_file");
+            // Essayer différents chemins alternatifs comme fallback
+            $alternative_paths = [
+                $root_dir . '/valenti1_carnetperche.sql',
+                $root_dir . DIRECTORY_SEPARATOR . 'valenti1_carnetperche.sql',
+                __DIR__ . '/valenti1_carnetperche.sql',
+                __DIR__ . DIRECTORY_SEPARATOR . 'valenti1_carnetperche.sql',
+                __DIR__ . '/../valenti1_carnetperche.sql',
+                dirname(__FILE__) . '/valenti1_carnetperche.sql'
+            ];
+            
+            $found_path = null;
+            foreach ($alternative_paths as $path) {
+                if (file_exists($path)) {
+                    $found_path = $path;
+                    break;
+                }
+            }
+            
+            if ($found_path) {
+                $sql_file = $found_path;
+            } else {
+                throw new Exception("Fichier SQL 'valenti1_carnetperche.sql' non trouvé. Assure-toi qu'il est bien à la racine du dossier : " . $root_dir);
+            }
         }
         
         $sql_content = file_get_contents($sql_file);
         
-        // Nettoyer le SQL : supprimer les commentaires et les directives phpMyAdmin
+        // Nettoyer le SQL
         $sql_content = preg_replace('/^\s*--.*$/m', '', $sql_content);
         $sql_content = preg_replace('/^\s*#.*$/m', '', $sql_content);
         $sql_content = preg_replace('/\/\*[^*]*\*+(?:[^\/*][^*]*\*+)*\//s', '', $sql_content);
         $sql_content = preg_replace('/^SET\s+.*?;$/m', '', $sql_content);
         $sql_content = preg_replace('/^USE\s+.*?;$/m', '', $sql_content);
         
-        // Exécuter les requêtes SQL nettoyées
+        // Exécuter les requêtes
         $queries = array_filter(array_map('trim', explode(';', $sql_content)));
+        $query_count = 0;
         
         foreach ($queries as $query) {
             $query = trim($query);
             if (!empty($query) && strlen($query) > 5) {
                 try {
                     $pdo->exec($query);
+                    $query_count++;
                 } catch (Exception $e) {
                     error_log("SQL Error: " . $e->getMessage());
                 }
@@ -115,11 +139,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
     }
 }
 
-// Vérifier les prérequis (Étape 2)
+// Vérifier les prérequis
 $php_version = phpversion();
 $pdo_available = extension_loaded('pdo');
 $pdo_mysql = extension_loaded('pdo_mysql');
 $writable = is_writable($root_dir);
+$sql_exists = file_exists($sql_file);
 
 ?>
 <!DOCTYPE html>
@@ -328,6 +353,11 @@ $writable = is_writable($root_dir);
             color: #0c5460;
             border: 1px solid #bee5eb;
         }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
         .welcome-text {
             color: #666;
             line-height: 1.8;
@@ -345,6 +375,15 @@ $writable = is_writable($root_dir);
         }
         .mamp-tips strong {
             color: #ff9800;
+        }
+        .debug-info {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
         }
     </style>
 </head>
@@ -440,11 +479,31 @@ $writable = is_writable($root_dir);
                         <small><?php echo $writable ? 'Dossier accessible' : 'Impossible d\'écrire'; ?></small>
                     </div>
                 </div>
+
+                <div class="check-item">
+                    <div class="check-icon <?php echo $sql_exists ? 'success' : 'error'; ?>">
+                        <?php echo $sql_exists ? '✓' : '✗'; ?>
+                    </div>
+                    <div class="check-label">
+                        <strong>Fichier SQL</strong>
+                        <small><?php echo $sql_exists ? 'Trouvé ✓' : 'NON TROUVÉ ✗'; ?></small>
+                    </div>
+                </div>
+
+                <?php if (!$sql_exists): ?>
+                <div class="alert alert-warning" style="margin-top: 15px;">
+                    <strong>⚠️ Attention :</strong> Le fichier <code>valenti1_carnetperche.sql</code> n'a pas été trouvé à la racine.
+                    <div class="debug-info" style="margin-top: 10px;">
+                        Cherche : <?php echo htmlspecialchars($sql_file); ?>
+                    </div>
+                    <p style="margin-top: 10px; margin-bottom: 0;"><strong>Solution :</strong> Assure-toi d'avoir copié le fichier SQL à la racine du projet et réessaie.</p>
+                </div>
+                <?php endif; ?>
             </div>
 
             <div class="button-group">
                 <a href="install.php?step=1" class="btn btn-secondary">← Précédent</a>
-                <a href="install.php?step=3" class="btn btn-primary <?php echo ($php_version && $pdo_available && $pdo_mysql && $writable) ? '' : 'disabled'; ?>" <?php echo ($php_version && $pdo_available && $pdo_mysql && $writable) ? '' : 'onclick="return false;"'; ?>>Suivant →</a>
+                <a href="install.php?step=3" class="btn btn-primary <?php echo ($php_version && $pdo_available && $pdo_mysql && $writable && $sql_exists) ? '' : 'disabled'; ?>" <?php echo ($php_version && $pdo_available && $pdo_mysql && $writable && $sql_exists) ? '' : 'onclick="return false;"'; ?>>Suivant →</a>
             </div>
         <?php endif; ?>
 
@@ -454,7 +513,10 @@ $writable = is_writable($root_dir);
                 <h2 style="color: #333; margin-bottom: 20px;">Configuration Base de Données</h2>
 
                 <?php if (!empty($error)): ?>
-                    <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
+                    <div class="alert alert-danger">
+                        <strong>⚠️ Erreur :</strong><br>
+                        <?php echo htmlspecialchars($error); ?>
+                    </div>
                 <?php endif; ?>
 
                 <form method="POST">
@@ -467,13 +529,13 @@ $writable = is_writable($root_dir);
                     <div class="form-group">
                         <label for="db_user">Utilisateur MySQL</label>
                         <input type="text" class="form-control" id="db_user" name="db_user" value="root" required>
-                        <small class="help-text">Pour MAMP: "root" | Pour XAMPP: "root" | Pour serveur: votre user</small>
+                        <small class="help-text">Pour MAMP: "root" | Pour XAMPP: "root"</small>
                     </div>
 
                     <div class="form-group">
                         <label for="db_password">Mot de passe</label>
                         <input type="password" class="form-control" id="db_password" name="db_password" value="root">
-                        <small class="help-text">Pour MAMP: "root" | Pour XAMPP: vide | Pour serveur: votre mot de passe</small>
+                        <small class="help-text">Pour MAMP: "root" | Pour XAMPP: vide</small>
                     </div>
 
                     <div class="form-group">
