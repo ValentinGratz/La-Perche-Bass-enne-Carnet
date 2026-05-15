@@ -1,12 +1,12 @@
 <?php
 /**
- * Configuration Base de Données
- * À ADAPTER AVEC VOS IDENTIFIANTS
+ * Configuration Base de Données - La Perche Basséenne
+ * Généré automatiquement par install.php
  */
 
 $db_host = 'localhost';
-$db_user = 'root';        // À MODIFIER
-$db_password = '';        // À MODIFIER
+$db_user = 'root';
+$db_password = 'root';
 $db_name = 'valenti1_carnetperche';
 
 try {
