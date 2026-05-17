@@ -11,6 +11,9 @@
  * - Génération config.php
  */
 
+// Démarrer la session AVANT tout
+session_start();
+
 // Déterminer l'étape actuelle
 $step = isset($_POST['step']) ? (int)$_POST['step'] : 1;
 $error = '';
@@ -19,11 +22,14 @@ $success = '';
 // ============================================
 // ÉTAPE 2 : TEST DE CONNEXION
 // ============================================
-if ($step === 2 && $_POST['action'] === 'test') {
+if ($step === 2 && isset($_POST['action']) && $_POST['action'] === 'test') {
     $host = $_POST['db_host'] ?? '';
     $user = $_POST['db_user'] ?? '';
     $pass = $_POST['db_pass'] ?? '';
     $dbname = $_POST['db_name'] ?? '';
+    
+    // Sauvegarder dans la session
+    $_SESSION['db_config'] = compact('host', 'user', 'pass', 'dbname');
     
     try {
         $pdo = new PDO(
@@ -44,7 +50,6 @@ if ($step === 2 && $_POST['action'] === 'test') {
         }
         
         $_SESSION['db_valid'] = true;
-        $_SESSION['db_config'] = compact('host', 'user', 'pass', 'dbname');
         
     } catch (PDOException $e) {
         $error = "❌ Erreur de connexion: " . $e->getMessage();
@@ -55,11 +60,10 @@ if ($step === 2 && $_POST['action'] === 'test') {
 // ============================================
 // ÉTAPE 3 : IMPORT DES TABLES
 // ============================================
-if ($step === 3 && $_POST['action'] === 'import') {
-    session_start();
+if ($step === 3 && isset($_POST['action']) && $_POST['action'] === 'import') {
     
     if (!isset($_SESSION['db_valid']) || !$_SESSION['db_valid']) {
-        $error = "❌ Configuration BD non validée. Revenir à l'étape 2.";
+        $error = "❌ Configuration BD non validée. Revenir à l'étape 2 et tester la connexion.";
     } else {
         $config = $_SESSION['db_config'];
         
@@ -103,8 +107,7 @@ if ($step === 3 && $_POST['action'] === 'import') {
 // ============================================
 // ÉTAPE 4 : GÉNÉRER CONFIG.PHP
 // ============================================
-if ($step === 4 && $_POST['action'] === 'generate') {
-    session_start();
+if ($step === 4 && isset($_POST['action']) && $_POST['action'] === 'generate') {
     
     if (!isset($_SESSION['db_config'])) {
         $error = "❌ Configuration BD manquante.";
@@ -372,10 +375,11 @@ if ($step === 4 && $_POST['action'] === 'generate') {
                 </div>
                 
                 <form method="POST" class="button-group">
-                    <button type="submit" class="btn-primary" name="action" value="next">
+                    <button type="submit" class="btn-primary">
                         Suivant →
                     </button>
                     <input type="hidden" name="step" value="2">
+                    <input type="hidden" name="action" value="next">
                 </form>
             <?php endif; ?>
             
@@ -394,22 +398,22 @@ if ($step === 4 && $_POST['action'] === 'generate') {
                 <form method="POST">
                     <div class="form-group">
                         <label for="db_host">Serveur (Host)</label>
-                        <input type="text" id="db_host" name="db_host" value="localhost" required>
+                        <input type="text" id="db_host" name="db_host" value="<?php echo $_SESSION['db_config']['host'] ?? 'localhost'; ?>" required>
                     </div>
                     
                     <div class="form-group">
                         <label for="db_user">Utilisateur</label>
-                        <input type="text" id="db_user" name="db_user" value="root" required>
+                        <input type="text" id="db_user" name="db_user" value="<?php echo $_SESSION['db_config']['user'] ?? 'root'; ?>" required>
                     </div>
                     
                     <div class="form-group">
                         <label for="db_pass">Mot de passe</label>
-                        <input type="password" id="db_pass" name="db_pass">
+                        <input type="password" id="db_pass" name="db_pass" value="<?php echo $_SESSION['db_config']['pass'] ?? ''; ?>">
                     </div>
                     
                     <div class="form-group">
                         <label for="db_name">Nom de la base</label>
-                        <input type="text" id="db_name" name="db_name" value="valenti1_carnetperche" required>
+                        <input type="text" id="db_name" name="db_name" value="<?php echo $_SESSION['db_config']['dbname'] ?? 'valenti1_carnetperche'; ?>" required>
                     </div>
                     
                     <div class="button-group">
