@@ -11,6 +11,19 @@ if (!file_exists($config_path)) {
 
 // Si config.php existe, charger normalement
 require_once($config_path);
+
+// Connexion pour récupérer quelques stats simples pour le dashboard
+try {
+    $pdo = new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8mb4', DB_USER, DB_PASS);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    $total_sorties = $pdo->query("SELECT COUNT(*) FROM sorties")->fetchColumn();
+    $total_prises = $pdo->query("SELECT COUNT(*) FROM prises")->fetchColumn();
+    $derniere_sortie = $pdo->query("SELECT date_sortie FROM sorties ORDER BY date_sortie DESC LIMIT 1")->fetchColumn();
+} catch (PDOException $e) {
+    $total_sorties = $total_prises = 0;
+    $derniere_sortie = 'Aucune';
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -18,12 +31,22 @@ require_once($config_path);
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>La Perche Basséenne v1.0 Build 7 - Accueil</title>
+    <title>La Perche Basséenne - Tableau de bord</title>
     <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
     <link href="dist/css/sb-admin-2.css" rel="stylesheet">
-    <link href="vendor/morrisjs/morris.css" rel="stylesheet">
     <link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <style>
+        .hero-banner {
+            background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .hero-banner h2 { margin-top: 0; }
+        .changelog-badge { font-size: 11px; margin-right: 5px; }
+    </style>
 </head>
 <body>
     <div id="wrapper">
@@ -35,22 +58,15 @@ require_once($config_path);
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.php">La Perche Basséenne</a>
+                <a class="navbar-brand" href="index.php"><i class="fa fa-anchor"></i> La Perche Basséenne</a>
             </div>
             <div class="navbar-default sidebar" role="navigation">
                 <div class="sidebar-nav navbar-collapse">
                     <ul class="nav" id="side-menu">
-                        <li class="sidebar-search">
-                            <div class="input-group custom-search-form">
-                                <input type="text" class="form-control" placeholder="Search...">
-                                <span class="input-group-btn">
-                                    <button class="btn btn-default" type="button"><i class="fa fa-search"></i></button>
-                                </span>
-                            </div>
-                        </li>
-                        <li><a href="index.php"><i class="fa fa-dashboard fa-fw"></i> Accueil</a></li>
-                        <li><a href="forms.php"><i class="fa fa-table fa-fw"></i> Formulaire</a></li>
-                        <li><a href="suivi.php"><i class="fa fa-edit fa-fw"></i> Suivi</a></li>
+                        <li><a href="index.php" class="active"><i class="fa fa-dashboard fa-fw"></i> Tableau de bord</a></li>
+                        <li><a href="forms.php"><i class="fa fa-plus-circle fa-fw"></i> Nouvelle sortie</a></li>
+                        <li><a href="suivi.php"><i class="fa fa-table fa-fw"></i> Suivi & Historique</a></li>
+                        <li><a href="stats.php"><i class="fa fa-bar-chart fa-fw"></i> Statistiques</a></li>
                     </ul>
                 </div>
             </div>
@@ -58,68 +74,147 @@ require_once($config_path);
         <div id="page-wrapper">
             <div class="row">
                 <div class="col-lg-12">
-                    <h1 class="page-header">Accueil</h1>
+                    <h1 class="page-header">Tableau de bord <small>v1.7 Stable</small></h1>
                 </div>
             </div>
-            <h2>Bienvenue sur la version web/local du carnet "La Perche Basséenne"</h2><br />
-            <div class="p-5 mb-5 bg-danger text-white">Pour la saisie des prises, merci de faire un enregistrement pour chaque prise.</div>
-            <h3>CHANGELOG :</h3>
-            <br />
-            <ul>
-                <li>v0.1 : Fichier sous Access : problème de saisie du formulaire</li>
-                <li>v0.2 : Fichier sous LibreOffice Base de données : impossible à l'ouvrir</li>
-                <li>v1.0 : Version web en local</li>
-                <li>v1.0 Build 1 : Version web, partie html réalisée uniquement</li>
-                <li>v1.0 Build 4 : page formulaire, suivi mises en forme, refonte de la bdd en sqlite</li>
-                <li>v1.0 Build 5 : Modification du titre des pages + guide d'utilisation rédigé</li>
-                <li>v1.0 Build 7 : changement de format BDD, au format SQL + intégration PHP complète</li>
-            </ul>
-            <h2>Guide d'utilisation :</h2>
-            <p>En premier lieu, merci de ne pas modifier directement les fichiers.</p>
-            <table>
-                <tr>
-                    <td><img src="img/menu.png"></td>
-                    <td><p>Pour accéder aux pages de saisie et de consultation, veuillez aller dans le menu de gauche. </p></td>
-                </tr>
-            </table>
-            <h4>Le formulaire</h4>
-            <table>
-                <tr>
-                    <td><img src="img/jour.png"></td>
-                    <td>La date est saisie au format automatique.<br />
-                    Pour la durée, merci de mettre directement soit le nombre d'heures ou la plage horaire. </td>
-                </tr>
-            </table>
-            <table>
-                <tr>
-                    <td><img src="img/meteo.png"></td>
-                    <td>Vous devez sélectionner dans le menu déroulante, sauf pour la phase lunaire que vous devez indiquer manuellement. </td>
-                </tr>
-            </table><br />
-            <table>
-                <tr>
-                    <td><img src="img/l'eau.png"></td>
-                    <td>Étant donné que pour la couleur et la force, il est impossible de faire en menu déroulante, merci de bien indiquer ces deux lignes. </td>
-                </tr>
-            </table>
-            <table>
-                <tr>
-                    <td><img src="img/composition de l'amorce _ materiel et lignes.png"></td>
-                    <td>Il est possible de saisir en liste (à la ligne), pour agrandir le champs, merci de cliquer sur le coin droit et de le tirer.</td>
-                </tr>
-            </table>
-            <table>
-                <tr>
-                    <td><img src="img/prises.png"></td>
-                </tr>
-            </table>
-            <p>Pour les prises, le formuaire n'a pas encore testé pour les 11 prises, donc, merci de saisir le formulaire par prise. </p>
-            <table>
-                <tr>
-                    <td><img src="img/remarques.png"></td>
-                    <td>Il est possible de saisir en liste (à la ligne), pour agrandir le champs, merci de cliquer sur le coin droit et de le tirer.</td>
-                </tr>
-            </table>
+
+            <!-- Bannière d'accueil -->
+            <div class="hero-banner">
+                <h2><i class="fa fa-compass"></i> Bienvenue sur ton carnet numérique</h2>
+                <p>Enregistre tes sorties pêche, consulte ton historique par date, et analyse tes résultats. Version web locale v1.7 Stable</p>
+            </div>
+
+            <!-- Rappel important -->
+            <div class="alert alert-warning">
+                <i class="fa fa-info-circle"></i> <strong>Rappel :</strong> Pour la saisie des prises, merci de faire un enregistrement pour chaque prise individuellement.
+            </div>
+
+            <!-- Widgets stats -->
+            <div class="row">
+                <div class="col-lg-4 col-md-6">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-xs-3"><i class="fa fa-calendar fa-5x"></i></div>
+                                <div class="col-xs-9 text-right">
+                                    <div class="huge"><?php echo $total_sorties; ?></div>
+                                    <div>Sorties enregistrées</div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="suivi.php">
+                            <div class="panel-footer">
+                                <span class="pull-left">Voir l'historique</span>
+                                <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                <div class="clearfix"></div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="panel panel-green">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-xs-3"><i class="fa fa-trophy fa-5x"></i></div>
+                                <div class="col-xs-9 text-right">
+                                    <div class="huge"><?php echo $total_prises; ?></div>
+                                    <div>Prises totales</div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="suivi.php">
+                            <div class="panel-footer">
+                                <span class="pull-left">Voir le détail</span>
+                                <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                <div class="clearfix"></div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="panel panel-yellow">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-xs-3"><i class="fa fa-clock-o fa-5x"></i></div>
+                                <div class="col-xs-9 text-right">
+                                    <div class="huge" style="font-size: 24px;"><?php echo $derniere_sortie ? date('d/m/Y', strtotime($derniere_sortie)) : 'Aucune'; ?></div>
+                                    <div>Dernière sortie</div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="forms.php">
+                            <div class="panel-footer">
+                                <span class="pull-left">Nouvelle sortie</span>
+                                <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                <div class="clearfix"></div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><i class="fa fa-bolt fa-fw"></i> Actions rapides</div>
+                        <div class="panel-body">
+                            <a href="forms.php" class="btn btn-success btn-lg"><i class="fa fa-plus"></i> Enregistrer une sortie</a>
+                            <a href="suivi.php" class="btn btn-primary btn-lg"><i class="fa fa-search"></i> Consulter par date</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Changelog repliable -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <a data-toggle="collapse" href="#changelog"><i class="fa fa-code-fork fa-fw"></i> Historique des versions</a>
+                        </div>
+                        <div id="changelog" class="panel-collapse collapse in">
+                            <div class="panel-body">
+                                <h4><span class="label label-success">v1.7 Stable</span> - Version finie stable et utilisable 🎣</h4>
+                                <ul>
+                                    <li><span class="label label-danger changelog-badge">🐛 Fix</span> Corrections critiques du système d'installation</li>
+                                    <li><span class="label label-danger changelog-badge">🐛 Fix</span> Correction chemin Windows/Linux <code>DIRECTORY_SEPARATOR</code></li>
+                                    <li><span class="label label-primary changelog-badge">✨ Feature</span> Wizard d'installation type WordPress</li>
+                                    <li><span class="label label-info changelog-badge">🗄 Improvement</span> BDD restructurée avec clés étrangères</li>
+                                    <li><span class="label label-info changelog-badge">📊 Improvement</span> Affichage des données filtrées correctement par date</li>
+                                    <li><span class="label label-info changelog-badge">🔐 Improvement</span> Gestion sécurisée des identifiants MAMP</li>
+                                </ul>
+                                <hr>
+                                <h5>v1.0 Build 7</h5>
+                                <ul>
+                                    <li>Changement de format BDD au format SQL + intégration PHP complète</li>
+                                </ul>
+                                <h5>v1.0 Build 5</h5>
+                                <ul>
+                                    <li>Modification du titre des pages + guide d'utilisation rédigé</li>
+                                </ul>
+                                <h5>v1.0 Build 4</h5>
+                                <ul>
+                                    <li>Page formulaire, suivi mises en forme, refonte de la bdd en sqlite</li>
+                                </ul>
+                                <h5>v1.0 Build 1</h5>
+                                <ul>
+                                    <li>Version web, partie html réalisée uniquement</li>
+                                </ul>
+                                <h5>v0.2</h5>
+                                <ul>
+                                    <li>Fichier sous LibreOffice Base de données : impossible à l'ouvrir</li>
+                                </ul>
+                                <h5>v0.1</h5>
+                                <ul>
+                                    <li>Fichier sous Access : problème de saisie du formulaire</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
     <script src="vendor/jquery/jquery.min.js"></script>
