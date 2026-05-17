@@ -42,6 +42,50 @@ Fichier réalisé à l'aide d'un template bootstrap.
 
   Reste juste le css de la page d'accueil une fois le wizard fini le css cassé, mais reviens quand on rafraichi. 
 
+### **🔧 Pré-requis**
+- **PHP** 8.0+
+- **MySQL** 5.7+ ou MariaDB
+- **XAMPP** / **WAMP** / **MAMP** installé
+
+### **📦 Installation en local**
+
+Ce projet s’installe comme un CMS classique type WordPress, avec un assistant d’installation.
+
+#### **1. Copier les fichiers**
+Télécharge le projet et décompresse-le dans le dossier `www` ou `htdocs` de ton logiciel localhost :
+
+| Logiciel | Dossier à utiliser |
+| --- | --- |
+| **XAMPP** | `C:\xampp\htdocs\La-Perche-Bass-enne-Carnet` |
+| **WAMP** | `C:\wamp64\www\La-Perche-Bass-enne-Carnet` |
+| **MAMP** Mac | `/Applications/MAMP/htdocs/La-Perche-Bass-enne-Carnet` |
+| **MAMP** Windows | `C:\MAMP\htdocs\La-Perche-Bass-enne-Carnet` |
+
+> **Note :** Tu peux renommer le dossier `La-Perche-Bass-enne-Carnet` comme tu veux, par ex. `carnet-peche`
+
+#### **2. Lancer les services**
+Démarre **Apache** et **MySQL** depuis le panneau de contrôle de XAMPP / WAMP / MAMP.
+
+#### **3. Lancer l’assistant d’installation**
+Ouvre ton navigateur et va sur l’URL correspondant à ton logiciel :
+
+| Logiciel | URL d’installation |
+| --- | --- |
+| **XAMPP** | `http://localhost/La-Perche-Bass-enne-Carnet/install.php` |
+| **WAMP** | `http://localhost/La-Perche-Bass-enne-Carnet/install.php` |
+| **MAMP** | `http://localhost:8888/La-Perche-Bass-enne-Carnet/install.php` |
+
+> Si tu as renommé le dossier, remplace `La-Perche-Bass-enne-Carnet` par ton nom de dossier.  
+> Pour MAMP, le port par défaut est `:8888`. Si tu l’as changé en `:80`, utilise juste `http://localhost/...`
+
+#### **4. Suivre le wizard**
+Une fois sur `install.php`, suis les étapes comme pour une installation WordPress :
+1. **Connexion à la base de données** : entre l’hôte `localhost`, l’utilisateur `root`, et laisse le mot de passe vide sur XAMPP/WAMP par défaut. Le wizard peut créer la BDD pour toi.
+2. **Création du compte admin** : choisis ton identifiant et mot de passe.
+3. **Finalisation** : le fichier de config est généré automatiquement.
+
+C’est prêt ! Tu peux ensuite te connecter et aller sur la page **"Suivi"** pour saisir tes journées de pêche et les retrouver par date 🎣
+
 # © COPYRIGHT
 Ce projet est personnel, donc aucune copie partielle ou totale n'est autorisée. 
 Je publie ce projet pour seulement avoir votre aide, n'étant que débutant en programmation. 
