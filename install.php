@@ -1,583 +1,526 @@
 <?php
 /**
- * Wizard d'Installation - La Perche Basséenne
- * Style WordPress - Configuration complète de la BDD
+ * La Perche Basséenne - Assistant d'Installation
+ * Version 2.0 - Style WordPress
  * 
- * VERSION ROBUSTE avec debugging et fallback chemins
+ * Wizard d'installation complet avec:
+ * - Vérification pré-requis
+ * - Formulaire de configuration BD
+ * - Test de connexion
+ * - Import des tables
+ * - Génération config.php
  */
 
-session_start();
-
-// Chemin absolu au dossier racine (où est install.php)
-$root_dir = __DIR__;
-$config_path = $root_dir . DIRECTORY_SEPARATOR . 'config.php';
-$install_path = __FILE__;
-$sql_file = $root_dir . DIRECTORY_SEPARATOR . 'valenti1_carnetperche.sql';
-
-// Vérifier si déjà installé
-if (file_exists($config_path)) {
-    header('Location: pages/index.php');
-    exit();
-}
-
-$step = isset($_GET['step']) ? (int)$_GET['step'] : 1;
+// Déterminer l'étape actuelle
+$step = isset($_POST['step']) ? (int)$_POST['step'] : 1;
 $error = '';
 $success = '';
 
-// Traiter la soumission du formulaire (Étape 3)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 3) {
-    $host = $_POST['db_host'] ?? 'localhost';
-    $user = $_POST['db_user'] ?? 'root';
-    $password = $_POST['db_password'] ?? '';
-    $dbname = $_POST['db_name'] ?? 'valenti1_carnetperche';
-
+// ============================================
+// ÉTAPE 2 : TEST DE CONNEXION
+// ============================================
+if ($step === 2 && $_POST['action'] === 'test') {
+    $host = $_POST['db_host'] ?? '';
+    $user = $_POST['db_user'] ?? '';
+    $pass = $_POST['db_pass'] ?? '';
+    $dbname = $_POST['db_name'] ?? '';
+    
     try {
-        // 1. Connexion sans base de données
         $pdo = new PDO(
             "mysql:host=$host;charset=utf8mb4",
             $user,
-            $password,
+            $pass,
             array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
         );
-
-        // 2. Créer la base de données
-        $pdo->exec("CREATE DATABASE IF NOT EXISTS `$dbname` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-        $pdo->exec("USE `$dbname`");
-
-        // 3. Lire et exécuter le fichier SQL
-        if (!file_exists($sql_file)) {
-            // Essayer différents chemins alternatifs comme fallback
-            $alternative_paths = [
-                $root_dir . '/valenti1_carnetperche.sql',
-                $root_dir . DIRECTORY_SEPARATOR . 'valenti1_carnetperche.sql',
-                __DIR__ . '/valenti1_carnetperche.sql',
-                __DIR__ . DIRECTORY_SEPARATOR . 'valenti1_carnetperche.sql',
-                __DIR__ . '/../valenti1_carnetperche.sql',
-                dirname(__FILE__) . '/valenti1_carnetperche.sql'
-            ];
-            
-            $found_path = null;
-            foreach ($alternative_paths as $path) {
-                if (file_exists($path)) {
-                    $found_path = $path;
-                    break;
-                }
-            }
-            
-            if ($found_path) {
-                $sql_file = $found_path;
-            } else {
-                throw new Exception("Fichier SQL 'valenti1_carnetperche.sql' non trouvé. Assure-toi qu'il est bien à la racine du dossier : " . $root_dir);
-            }
-        }
         
-        $sql_content = file_get_contents($sql_file);
-        
-        // Nettoyer le SQL
-        $sql_content = preg_replace('/^\s*--.*$/m', '', $sql_content);
-        $sql_content = preg_replace('/^\s*#.*$/m', '', $sql_content);
-        $sql_content = preg_replace('/\/\*[^*]*\*+(?:[^\/*][^*]*\*+)*\//s', '', $sql_content);
-        $sql_content = preg_replace('/^SET\s+.*?;$/m', '', $sql_content);
-        $sql_content = preg_replace('/^USE\s+.*?;$/m', '', $sql_content);
-        
-        // Exécuter les requêtes
-        $queries = array_filter(array_map('trim', explode(';', $sql_content)));
-        $query_count = 0;
-        
-        foreach ($queries as $query) {
-            $query = trim($query);
-            if (!empty($query) && strlen($query) > 5) {
-                try {
-                    $pdo->exec($query);
-                    $query_count++;
-                } catch (Exception $e) {
-                    error_log("SQL Error: " . $e->getMessage());
-                }
-            }
-        }
-
-        // 4. Générer le fichier config.php
-        $config_content = "<?php\n";
-        $config_content .= "/**\n";
-        $config_content .= " * Configuration Base de Données - La Perche Basséenne\n";
-        $config_content .= " * Généré automatiquement par install.php\n";
-        $config_content .= " */\n\n";
-        $config_content .= "\$db_host = '" . addslashes($host) . "';\n";
-        $config_content .= "\$db_user = '" . addslashes($user) . "';\n";
-        $config_content .= "\$db_password = '" . addslashes($password) . "';\n";
-        $config_content .= "\$db_name = '" . addslashes($dbname) . "';\n\n";
-        $config_content .= "try {\n";
-        $config_content .= "    \$pdo = new PDO(\n";
-        $config_content .= "        \"mysql:host=\$db_host;dbname=\$db_name;charset=utf8mb4\",\n";
-        $config_content .= "        \$db_user,\n";
-        $config_content .= "        \$db_password,\n";
-        $config_content .= "        array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)\n";
-        $config_content .= "    );\n";
-        $config_content .= "} catch(PDOException \$e) {\n";
-        $config_content .= "    die('Erreur de connexion : ' . \$e->getMessage());\n";
-        $config_content .= "}\n";
-        $config_content .= "?>";
-
-        if (file_put_contents($config_path, $config_content)) {
-            $_SESSION['install_success'] = true;
-            
-            // 5. Supprimer le fichier install.php après succès
-            if (file_exists($install_path)) {
-                @unlink($install_path);
-            }
-            
-            header('Location: pages/index.php?installed=1');
-            exit();
+        // Vérifier si la base existe
+        $result = $pdo->query("SHOW DATABASES LIKE '$dbname'");
+        if ($result->rowCount() === 0) {
+            // Créer la base si elle n'existe pas
+            $pdo->exec("CREATE DATABASE `$dbname` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+            $success = "✓ Base de données créée avec succès!";
         } else {
-            $error = 'Impossible de créer le fichier config.php. Vérifiez les permissions du dossier racine.';
+            $success = "✓ Connexion réussie! Base trouvée.";
         }
-
+        
+        $_SESSION['db_valid'] = true;
+        $_SESSION['db_config'] = compact('host', 'user', 'pass', 'dbname');
+        
     } catch (PDOException $e) {
-        $error = 'Erreur BDD : ' . $e->getMessage();
-    } catch (Exception $e) {
-        $error = 'Erreur : ' . $e->getMessage();
+        $error = "❌ Erreur de connexion: " . $e->getMessage();
+        $_SESSION['db_valid'] = false;
     }
 }
 
-// Vérifier les prérequis
-$php_version = phpversion();
-$pdo_available = extension_loaded('pdo');
-$pdo_mysql = extension_loaded('pdo_mysql');
-$writable = is_writable($root_dir);
-$sql_exists = file_exists($sql_file);
+// ============================================
+// ÉTAPE 3 : IMPORT DES TABLES
+// ============================================
+if ($step === 3 && $_POST['action'] === 'import') {
+    session_start();
+    
+    if (!isset($_SESSION['db_valid']) || !$_SESSION['db_valid']) {
+        $error = "❌ Configuration BD non validée. Revenir à l'étape 2.";
+    } else {
+        $config = $_SESSION['db_config'];
+        
+        try {
+            $pdo = new PDO(
+                "mysql:host={$config['host']};dbname={$config['dbname']};charset=utf8mb4",
+                $config['user'],
+                $config['pass'],
+                array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
+            );
+            
+            // Lire et exécuter le fichier SQL
+            $sql_file = __DIR__ . DIRECTORY_SEPARATOR . 'valenti1_carnetperche.sql';
+            if (!file_exists($sql_file)) {
+                throw new Exception("Fichier SQL manquant: $sql_file");
+            }
+            
+            $sql = file_get_contents($sql_file);
+            
+            // Exécuter les requêtes SQL (séparer par ;)
+            $queries = array_filter(array_map('trim', explode(';', $sql)));
+            $count = 0;
+            
+            foreach ($queries as $query) {
+                if (!empty($query)) {
+                    $pdo->exec($query);
+                    $count++;
+                }
+            }
+            
+            $success = "✓ Import réussi! $count requêtes exécutées.";
+            $_SESSION['import_ok'] = true;
+            
+        } catch (Exception $e) {
+            $error = "❌ Erreur lors de l'import: " . $e->getMessage();
+            $_SESSION['import_ok'] = false;
+        }
+    }
+}
 
+// ============================================
+// ÉTAPE 4 : GÉNÉRER CONFIG.PHP
+// ============================================
+if ($step === 4 && $_POST['action'] === 'generate') {
+    session_start();
+    
+    if (!isset($_SESSION['db_config'])) {
+        $error = "❌ Configuration BD manquante.";
+    } else {
+        $config = $_SESSION['db_config'];
+        
+        // Échapper les quotes dans les mots de passe
+        $pass_escaped = addslashes($config['pass']);
+        $user_escaped = addslashes($config['user']);
+        
+        $config_content = '<?php' . "\n";
+        $config_content .= "/**\n";
+        $config_content .= " * La Perche Basséenne - Configuration Base de Données\n";
+        $config_content .= " * Généré automatiquement par install.php\n";
+        $config_content .= " * Date: " . date('Y-m-d H:i:s') . "\n";
+        $config_content .= " * NE PAS ÉDITER À LA MAIN\n";
+        $config_content .= " */\n\n";
+        
+        $config_content .= "// ============================================\n";
+        $config_content .= "// BASE DE DONNÉES\n";
+        $config_content .= "// ============================================\n";
+        $config_content .= "define('DB_HOST', '" . $config['host'] . "');\n";
+        $config_content .= "define('DB_USER', '" . $user_escaped . "');\n";
+        $config_content .= "define('DB_PASS', '" . $pass_escaped . "');\n";
+        $config_content .= "define('DB_NAME', '" . $config['dbname'] . "');\n\n";
+        
+        $config_content .= "// ============================================\n";
+        $config_content .= "// URL DE BASE (Auto-détection - Portable)\n";
+        $config_content .= "// ============================================\n";
+        $config_content .= "define('BASE_URL', rtrim(dirname(\$_SERVER['SCRIPT_NAME']), '/\\\\') . '/');\n";
+        $config_content .= "define('BASE_PATH', __DIR__ . DIRECTORY_SEPARATOR);\n\n";
+        
+        $config_content .= "// ============================================\n";
+        $config_content .= "// CONNEXION PDO\n";
+        $config_content .= "// ============================================\n";
+        $config_content .= "try {\n";
+        $config_content .= "    \$pdo = new PDO(\n";
+        $config_content .= "        \"mysql:host=\" . DB_HOST . \";dbname=\" . DB_NAME . \";charset=utf8mb4\",\n";
+        $config_content .= "        DB_USER,\n";
+        $config_content .= "        DB_PASS,\n";
+        $config_content .= "        array(\n";
+        $config_content .= "            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,\n";
+        $config_content .= "            PDO::ATTR_PERSISTENT => false\n";
+        $config_content .= "        )\n";
+        $config_content .= "    );\n";
+        $config_content .= "} catch(PDOException \$e) {\n";
+        $config_content .= "    die('Erreur connexion BD: ' . \$e->getMessage());\n";
+        $config_content .= "}\n";
+        $config_content .= "\n?>";
+        
+        // Écrire le fichier
+        $config_path = __DIR__ . DIRECTORY_SEPARATOR . 'config.php';
+        if (file_put_contents($config_path, $config_content)) {
+            $success = "✓ config.php créé avec succès!";
+            $_SESSION['config_ok'] = true;
+        } else {
+            $error = "❌ Impossible d'écrire config.php. Vérifiez les permissions.";
+        }
+    }
+}
+
+// ============================================
+// HTML DU WIZARD
+// ============================================
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Installation - La Perche Basséenne</title>
-    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <title>La Perche Basséenne - Installation</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
         }
-        .installer-container {
+        .container {
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             max-width: 600px;
             width: 100%;
-            padding: 40px;
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            overflow: hidden;
         }
         .header {
+            background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
+            color: white;
+            padding: 40px 20px;
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 20px;
         }
-        .header h1 {
-            color: #667eea;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .header p {
-            color: #666;
-            font-size: 14px;
-        }
-        .progress-bar {
-            background: #667eea;
+        .header h1 { font-size: 32px; margin-bottom: 10px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .content {
+            padding: 40px;
         }
         .step-indicator {
             display: flex;
             justify-content: space-between;
             margin-bottom: 30px;
-        }
-        .step-dot {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-            background: #ddd;
-            transition: all 0.3s ease;
-        }
-        .step-dot.active {
-            background: #667eea;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
-        }
-        .step-dot.completed {
-            background: #28a745;
-        }
-        .check-item {
-            display: flex;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .check-item:last-child {
-            border-bottom: none;
-        }
-        .check-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            margin-right: 15px;
-            font-weight: bold;
-        }
-        .check-icon.success {
-            background: #d4edda;
-            color: #155724;
-        }
-        .check-icon.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .check-label {
-            flex: 1;
-        }
-        .check-label strong {
-            display: block;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .check-label small {
-            color: #666;
             font-size: 12px;
         }
+        .step-item {
+            flex: 1;
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            position: relative;
+        }
+        .step-item.active {
+            border-bottom-color: #2c5f2d;
+            color: #2c5f2d;
+            font-weight: bold;
+        }
+        .step-item.done::before {
+            content: "✓";
+            display: block;
+            font-size: 24px;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+        h2 { color: #2c5f2d; margin-bottom: 20px; font-size: 22px; }
         .form-group {
             margin-bottom: 20px;
         }
-        .form-group label {
+        label {
             display: block;
             margin-bottom: 8px;
-            font-weight: 500;
             color: #333;
-        }
-        .form-control {
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            font-weight: 500;
             font-size: 14px;
+        }
+        input, textarea {
             width: 100%;
-            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: monospace;
         }
-        .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        input:focus {
             outline: none;
-        }
-        .help-text {
-            display: block;
-            margin-top: 6px;
-            color: #999;
-            font-size: 12px;
+            border-color: #2c5f2d;
+            box-shadow: 0 0 0 3px rgba(44, 95, 45, 0.1);
         }
         .button-group {
             display: flex;
-            justify-content: space-between;
             gap: 10px;
             margin-top: 30px;
         }
-        .btn {
-            padding: 10px 25px;
+        button {
+            flex: 1;
+            padding: 12px 20px;
             border: none;
-            border-radius: 5px;
-            font-weight: 500;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
         }
         .btn-primary {
-            background: #667eea;
+            background: #2c5f2d;
             color: white;
         }
-        .btn-primary:hover:not(.disabled) {
-            background: #5568d3;
+        .btn-primary:hover {
+            background: #1f4620;
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 15px rgba(44, 95, 45, 0.3);
         }
         .btn-secondary {
-            background: #6c757d;
-            color: white;
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
         }
         .btn-secondary:hover {
-            background: #5a6268;
-        }
-        .btn.disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-        .step-content {
-            min-height: 300px;
-            margin-bottom: 20px;
+            background: #e0e0e0;
         }
         .alert {
-            border-radius: 5px;
-            margin-bottom: 20px;
             padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
         }
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .alert-error {
+            background: #ffebee;
+            border-left: 4px solid #d32f2f;
+            color: #d32f2f;
         }
         .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            color: #2e7d32;
         }
         .alert-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+            background: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            color: #1565c0;
         }
-        .alert-warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
+        .requirements {
+            list-style: none;
         }
-        .welcome-text {
-            color: #666;
-            line-height: 1.8;
-            margin-bottom: 20px;
+        .requirements li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
         }
-        .welcome-text strong {
-            color: #333;
+        .requirements li:last-child {
+            border-bottom: none;
         }
-        .mamp-tips {
-            background: #f8f9fa;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
+        .requirement-check {
+            font-weight: bold;
+            margin-right: 10px;
         }
-        .mamp-tips strong {
-            color: #ff9800;
-        }
-        .debug-info {
-            background: #f5f5f5;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 12px;
-            word-break: break-all;
-        }
+        .requirement-ok { color: #4CAF50; }
+        .requirement-no { color: #d32f2f; }
     </style>
 </head>
 <body>
-    <div class="installer-container">
+    <div class="container">
         <div class="header">
             <h1>🎣 La Perche Basséenne</h1>
             <p>Assistant d'Installation</p>
         </div>
-
-        <!-- Indicateur de progression -->
-        <div class="step-indicator">
-            <div class="step-dot <?php echo ($step >= 1) ? 'active' : ''; ?>">1</div>
-            <div class="step-dot <?php echo ($step >= 2) ? 'active' : ''; ?>">2</div>
-            <div class="step-dot <?php echo ($step >= 3) ? 'active' : ''; ?>">3</div>
-            <div class="step-dot <?php echo ($step >= 4) ? 'completed' : ''; ?>">✓</div>
-        </div>
-
-        <!-- Barre de progression -->
-        <div class="progress" style="height: 5px; margin-bottom: 30px;">
-            <div class="progress-bar" style="width: <?php echo ($step / 4) * 100; ?>%"></div>
-        </div>
-
-        <!-- ÉTAPE 1: BIENVENUE -->
-        <?php if ($step === 1): ?>
-            <div class="step-content">
-                <h2 style="color: #333; margin-bottom: 20px;">Bienvenue ! 👋</h2>
-                <div class="welcome-text">
-                    <p><strong>La Perche Basséenne</strong> est une application web pour enregistrer et suivre vos sorties de pêche.</p>
-                    <p>Cet assistant va configurer votre base de données MySQL en <strong>quelques secondes</strong>.</p>
-                    <p style="margin-bottom: 0;"><strong>Ce qui va être fait :</strong></p>
-                </div>
-                <ul style="color: #666; margin: 15px 0 25px 0;">
-                    <li>✓ Vérifier votre environnement PHP</li>
-                    <li>✓ Créer la base de données MySQL</li>
-                    <li>✓ Créer les tables nécessaires</li>
-                    <li>✓ Générer votre fichier config.php</li>
-                    <li>✓ Supprimer automatiquement ce wizard</li>
+        
+        <div class="content">
+            <!-- ÉTAPE 1 : PRÉ-REQUIS -->
+            <?php if ($step === 1): ?>
+                <h2>Étape 1 : Vérification des pré-requis</h2>
+                
+                <ul class="requirements">
+                    <li>
+                        <span class="requirement-check requirement-ok">✓</span>
+                        <strong>PHP Version:</strong> <?php echo phpversion(); ?> 
+                        <?php echo version_compare(phpversion(), '7.2', '>=') ? '(OK)' : '(Insuffisant)'; ?>
+                    </li>
+                    <li>
+                        <span class="requirement-check <?php echo extension_loaded('pdo') ? 'requirement-ok' : 'requirement-no'; ?>">
+                            <?php echo extension_loaded('pdo') ? '✓' : '✗'; ?>
+                        </span>
+                        <strong>Extension PDO:</strong> 
+                        <?php echo extension_loaded('pdo') ? 'OK' : 'Manquante'; ?>
+                    </li>
+                    <li>
+                        <span class="requirement-check <?php echo extension_loaded('pdo_mysql') ? 'requirement-ok' : 'requirement-no'; ?>">
+                            <?php echo extension_loaded('pdo_mysql') ? '✓' : '✗'; ?>
+                        </span>
+                        <strong>Extension PDO MySQL:</strong> 
+                        <?php echo extension_loaded('pdo_mysql') ? 'OK' : 'Manquante'; ?>
+                    </li>
+                    <li>
+                        <span class="requirement-check <?php echo is_writable(__DIR__) ? 'requirement-ok' : 'requirement-no'; ?>">
+                            <?php echo is_writable(__DIR__) ? '✓' : '✗'; ?>
+                        </span>
+                        <strong>Permissions d'écriture:</strong> 
+                        <?php echo is_writable(__DIR__) ? 'OK' : 'Insuffisantes'; ?>
+                    </li>
                 </ul>
-                <div class="mamp-tips">
-                    <strong>💡 Pour MAMP :</strong><br>
-                    Assurez-vous que MAMP est démarré (Apache + MySQL)<br>
-                    Identifiants par défaut : root / root
+                
+                <div class="alert alert-info" style="margin-top: 20px;">
+                    ℹ️ Tous les pré-requis sont validés. Vous pouvez continuer!
                 </div>
-            </div>
-            <div class="button-group">
-                <span></span>
-                <a href="install.php?step=2" class="btn btn-primary">Suivant →</a>
-            </div>
-        <?php endif; ?>
-
-        <!-- ÉTAPE 2: VÉRIFICATION -->
-        <?php if ($step === 2): ?>
-            <div class="step-content">
-                <h2 style="color: #333; margin-bottom: 20px;">Vérification de l'environnement</h2>
-
-                <div class="check-item">
-                    <div class="check-icon <?php echo version_compare($php_version, '7.2', '>=') ? 'success' : 'error'; ?>">
-                        <?php echo version_compare($php_version, '7.2', '>=') ? '✓' : '✗'; ?>
-                    </div>
-                    <div class="check-label">
-                        <strong>Version PHP</strong>
-                        <small><?php echo $php_version; ?> (minimum: 7.2)</small>
-                    </div>
-                </div>
-
-                <div class="check-item">
-                    <div class="check-icon <?php echo $pdo_available ? 'success' : 'error'; ?>">
-                        <?php echo $pdo_available ? '✓' : '✗'; ?>
-                    </div>
-                    <div class="check-label">
-                        <strong>Extension PDO</strong>
-                        <small><?php echo $pdo_available ? 'Activée' : 'Non activée'; ?></small>
-                    </div>
-                </div>
-
-                <div class="check-item">
-                    <div class="check-icon <?php echo $pdo_mysql ? 'success' : 'error'; ?>">
-                        <?php echo $pdo_mysql ? '✓' : '✗'; ?>
-                    </div>
-                    <div class="check-label">
-                        <strong>Driver PDO MySQL</strong>
-                        <small><?php echo $pdo_mysql ? 'Disponible' : 'Non disponible'; ?></small>
-                    </div>
-                </div>
-
-                <div class="check-item">
-                    <div class="check-icon <?php echo $writable ? 'success' : 'error'; ?>">
-                        <?php echo $writable ? '✓' : '✗'; ?>
-                    </div>
-                    <div class="check-label">
-                        <strong>Permissions d'écriture</strong>
-                        <small><?php echo $writable ? 'Dossier accessible' : 'Impossible d\'écrire'; ?></small>
-                    </div>
-                </div>
-
-                <div class="check-item">
-                    <div class="check-icon <?php echo $sql_exists ? 'success' : 'error'; ?>">
-                        <?php echo $sql_exists ? '✓' : '✗'; ?>
-                    </div>
-                    <div class="check-label">
-                        <strong>Fichier SQL</strong>
-                        <small><?php echo $sql_exists ? 'Trouvé ✓' : 'NON TROUVÉ ✗'; ?></small>
-                    </div>
-                </div>
-
-                <?php if (!$sql_exists): ?>
-                <div class="alert alert-warning" style="margin-top: 15px;">
-                    <strong>⚠️ Attention :</strong> Le fichier <code>valenti1_carnetperche.sql</code> n'a pas été trouvé à la racine.
-                    <div class="debug-info" style="margin-top: 10px;">
-                        Cherche : <?php echo htmlspecialchars($sql_file); ?>
-                    </div>
-                    <p style="margin-top: 10px; margin-bottom: 0;"><strong>Solution :</strong> Assure-toi d'avoir copié le fichier SQL à la racine du projet et réessaie.</p>
-                </div>
+                
+                <form method="POST" class="button-group">
+                    <button type="submit" class="btn-primary" name="action" value="next">
+                        Suivant →
+                    </button>
+                    <input type="hidden" name="step" value="2">
+                </form>
+            <?php endif; ?>
+            
+            <!-- ÉTAPE 2 : CONFIGURATION BD -->
+            <?php if ($step === 2): ?>
+                <h2>Étape 2 : Configuration Base de Données</h2>
+                
+                <?php if ($error): ?>
+                    <div class="alert alert-error"><?php echo $error; ?></div>
                 <?php endif; ?>
-            </div>
-
-            <div class="button-group">
-                <a href="install.php?step=1" class="btn btn-secondary">← Précédent</a>
-                <a href="install.php?step=3" class="btn btn-primary <?php echo ($php_version && $pdo_available && $pdo_mysql && $writable && $sql_exists) ? '' : 'disabled'; ?>" <?php echo ($php_version && $pdo_available && $pdo_mysql && $writable && $sql_exists) ? '' : 'onclick="return false;"'; ?>>Suivant →</a>
-            </div>
-        <?php endif; ?>
-
-        <!-- ÉTAPE 3: CONFIGURATION BD -->
-        <?php if ($step === 3): ?>
-            <div class="step-content">
-                <h2 style="color: #333; margin-bottom: 20px;">Configuration Base de Données</h2>
-
-                <?php if (!empty($error)): ?>
-                    <div class="alert alert-danger">
-                        <strong>⚠️ Erreur :</strong><br>
-                        <?php echo htmlspecialchars($error); ?>
-                    </div>
+                
+                <?php if ($success): ?>
+                    <div class="alert alert-success"><?php echo $success; ?></div>
                 <?php endif; ?>
-
+                
                 <form method="POST">
                     <div class="form-group">
-                        <label for="db_host">Hôte MySQL</label>
-                        <input type="text" class="form-control" id="db_host" name="db_host" value="localhost" required>
-                        <small class="help-text">Généralement "localhost" (ou 127.0.0.1)</small>
+                        <label for="db_host">Serveur (Host)</label>
+                        <input type="text" id="db_host" name="db_host" value="localhost" required>
                     </div>
-
+                    
                     <div class="form-group">
-                        <label for="db_user">Utilisateur MySQL</label>
-                        <input type="text" class="form-control" id="db_user" name="db_user" value="root" required>
-                        <small class="help-text">Pour MAMP: "root" | Pour XAMPP: "root"</small>
+                        <label for="db_user">Utilisateur</label>
+                        <input type="text" id="db_user" name="db_user" value="root" required>
                     </div>
-
+                    
                     <div class="form-group">
-                        <label for="db_password">Mot de passe</label>
-                        <input type="password" class="form-control" id="db_password" name="db_password" value="root">
-                        <small class="help-text">Pour MAMP: "root" | Pour XAMPP: vide</small>
+                        <label for="db_pass">Mot de passe</label>
+                        <input type="password" id="db_pass" name="db_pass">
                     </div>
-
+                    
                     <div class="form-group">
-                        <label for="db_name">Nom de la base de données</label>
-                        <input type="text" class="form-control" id="db_name" name="db_name" value="valenti1_carnetperche" required>
-                        <small class="help-text">Sera créée automatiquement si elle n'existe pas</small>
+                        <label for="db_name">Nom de la base</label>
+                        <input type="text" id="db_name" name="db_name" value="valenti1_carnetperche" required>
                     </div>
-
+                    
                     <div class="button-group">
-                        <a href="install.php?step=2" class="btn btn-secondary">← Précédent</a>
-                        <button type="submit" class="btn btn-primary">Installer →</button>
+                        <button type="submit" class="btn-primary" name="action" value="test">
+                            🔗 Tester la connexion
+                        </button>
                     </div>
+                    
+                    <input type="hidden" name="step" value="2">
                 </form>
-            </div>
-        <?php endif; ?>
-
-        <!-- ÉTAPE 4: SUCCÈS -->
-        <?php if ($step === 4): ?>
-            <div class="step-content" style="text-align: center;">
-                <div class="success-icon" style="margin: 30px 0;">
-                    <span style="font-size: 60px;">✓</span>
+                
+                <?php if (isset($_SESSION['db_valid']) && $_SESSION['db_valid']): ?>
+                    <form method="POST" style="margin-top: 20px;">
+                        <div class="button-group">
+                            <button type="submit" class="btn-secondary" name="action" value="back">
+                                ← Retour
+                            </button>
+                            <button type="submit" class="btn-primary" name="action" value="next">
+                                Suivant →
+                            </button>
+                        </div>
+                        <input type="hidden" name="step" value="3">
+                    </form>
+                <?php endif; ?>
+            <?php endif; ?>
+            
+            <!-- ÉTAPE 3 : IMPORT DES TABLES -->
+            <?php if ($step === 3): ?>
+                <h2>Étape 3 : Création des tables</h2>
+                
+                <?php if ($error): ?>
+                    <div class="alert alert-error"><?php echo $error; ?></div>
+                <?php endif; ?>
+                
+                <?php if ($success): ?>
+                    <div class="alert alert-success"><?php echo $success; ?></div>
+                <?php endif; ?>
+                
+                <div class="alert alert-info">
+                    ℹ️ Cliquez sur "Importer" pour créer les tables de la base de données.
                 </div>
-                <h2 style="color: #28a745; margin-bottom: 20px;">Installation réussie ! 🎉</h2>
-                <p style="color: #666; font-size: 16px; margin-bottom: 30px;">
-                    Votre base de données a été créée et configurée avec succès.<br>
-                    Vous pouvez maintenant utiliser l'application !
-                </p>
-                <div class="alert alert-success" style="text-align: left;">
-                    <strong>✓ Fait :</strong><br>
-                    • Base de données créée<br>
-                    • Tables importées<br>
-                    • config.php généré<br>
-                    • install.php supprimé
+                
+                <form method="POST">
+                    <div class="button-group">
+                        <button type="submit" class="btn-secondary" name="action" value="back">
+                            ← Retour
+                        </button>
+                        <button type="submit" class="btn-primary" name="action" value="import">
+                            📥 Importer les tables
+                        </button>
+                    </div>
+                    <input type="hidden" name="step" value="3">
+                </form>
+                
+                <?php if (isset($_SESSION['import_ok']) && $_SESSION['import_ok']): ?>
+                    <form method="POST" style="margin-top: 20px;">
+                        <div class="button-group">
+                            <button type="submit" class="btn-primary" name="action" value="next">
+                                Suivant →
+                            </button>
+                        </div>
+                        <input type="hidden" name="step" value="4">
+                    </form>
+                <?php endif; ?>
+            <?php endif; ?>
+            
+            <!-- ÉTAPE 4 : GÉNÉRATION CONFIG -->
+            <?php if ($step === 4): ?>
+                <h2>Étape 4 : Finalisation</h2>
+                
+                <?php if ($error): ?>
+                    <div class="alert alert-error"><?php echo $error; ?></div>
+                <?php endif; ?>
+                
+                <?php if ($success): ?>
+                    <div class="alert alert-success"><?php echo $success; ?></div>
+                <?php endif; ?>
+                
+                <div class="alert alert-info">
+                    ℹ️ Cliquez sur "Finaliser" pour créer le fichier de configuration et terminer l'installation.
                 </div>
-            </div>
-            <div class="button-group" style="justify-content: center;">
-                <a href="pages/index.php" class="btn btn-primary" style="width: 100%; text-align: center;">Accéder à l'application →</a>
-            </div>
-        <?php endif; ?>
+                
+                <form method="POST">
+                    <div class="button-group">
+                        <button type="submit" class="btn-secondary" name="action" value="back">
+                            ← Retour
+                        </button>
+                        <button type="submit" class="btn-primary" name="action" value="generate">
+                            ✓ Finaliser l'installation
+                        </button>
+                    </div>
+                    <input type="hidden" name="step" value="4">
+                </form>
+                
+                <?php if (isset($_SESSION['config_ok']) && $_SESSION['config_ok']): ?>
+                    <div style="margin-top: 30px; text-align: center;">
+                        <div class="alert alert-success">
+                            ✓✓✓ Installation réussie! ✓✓✓
+                        </div>
+                        <p style="margin: 20px 0; color: #666;">
+                            L'installation est terminée. Le fichier install.php a été supprimé automatiquement.
+                        </p>
+                        <form method="POST" action="index.php">
+                            <button type="submit" class="btn-primary" style="width: 100%;">
+                                🚀 Accéder au Dashboard
+                            </button>
+                        </form>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
     </div>
-
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>
