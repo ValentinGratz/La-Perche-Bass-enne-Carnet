@@ -177,3 +177,4 @@ Ce projet est personnel, donc aucune copie partielle ou totale n'est autorisée.
 Je publie ce projet pour seulement avoir votre aide, n'étant que débutant en programmation.
 
 Pour certaines parties des fichiers, j'ai eu l'aide d'un ami.
+Utilisation de Claude IA. 
