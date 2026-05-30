@@ -2,9 +2,9 @@
 
 Carnet en localhost pour la saisie des journées de pêche.
 
-![Taille du dépôt](https://img.shields.io/github/repo-size/ValentinGratz/bug-reports-archive)
-![Dernier commit](https://img.shields.io/github/last-commit/ValentinGratz/bug-reports-archive)
-![Issues](https://img.shields.io/github/issues/ValentinGratz/bug-reports-archive)
+![Taille du dépôt](https://img.shields.io/github/repo-size/ValentinGratz/La-Perche-Bass-enne-Carnet)
+![Dernier commit](https://img.shields.io/github/last-commit/ValentinGratz/La-Perche-Bass-enne-Carnet)
+![Issues](https://img.shields.io/github/issues/ValentinGratz/La-Perche-Bass-enne-Carnet)
 
 ## 📖 Présentation
 
