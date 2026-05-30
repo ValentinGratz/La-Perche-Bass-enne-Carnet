@@ -2,6 +2,10 @@
 
 Carnet en localhost pour la saisie des journées de pêche.
 
+![Taille du dépôt](https://img.shields.io/github/repo-size/ValentinGratz/bug-reports-archive)
+![Dernier commit](https://img.shields.io/github/last-commit/ValentinGratz/bug-reports-archive)
+![Issues](https://img.shields.io/github/issues/ValentinGratz/bug-reports-archive)
+
 ## 📖 Présentation
 
 Réalisation au format HTML/PHP d'un fichier pour saisir les données sur la journée de pêche, avec la possibilité de retrouver les données d'une journée par date.
