@@ -1558,11 +1558,21 @@ if (typeof jQuery === 'undefined') {
       .css(isVertical ? 'top' : 'left', '')
   }
 
+  Tooltip.prototype.escapeHtml = function (string) {
+    return String(string)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+      .replace(/`/g, '&#96;')
+  }
+
   Tooltip.prototype.setContent = function () {
     var $tip  = this.tip()
     var title = this.getTitle()
 
-    $tip.find('.tooltip-inner')[this.options.html ? 'html' : 'text'](title)
+    $tip.find('.tooltip-inner')[this.options.html ? 'html' : 'text'](this.options.html ? this.escapeHtml(title) : title)
     $tip.removeClass('fade in top bottom left right')
   }
 
