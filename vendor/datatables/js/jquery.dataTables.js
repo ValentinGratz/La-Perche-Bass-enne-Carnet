@@ -1367,7 +1367,7 @@
 	
 	var _re_dic = {};
 	var _re_new_lines = /[\r\n]/g;
-	var _re_html = /<.*?>/g;
+	var _re_html = /[<>]/g;
 	var _re_date_start = /^[\w\+\-]/;
 	var _re_date_end = /[\w\+\-]$/;
 	
