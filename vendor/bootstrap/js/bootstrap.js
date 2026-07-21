@@ -109,7 +109,10 @@ if (typeof jQuery === 'undefined') {
       selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
     }
 
-    var $parent = $(selector === '#' ? [] : selector)
+    var $parent = $()
+    if (selector && selector !== '#') {
+      $parent = $($.find(selector))
+    }
 
     if (e) e.preventDefault()
 
