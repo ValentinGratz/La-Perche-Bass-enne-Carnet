@@ -6022,7 +6022,9 @@
 		{
 			var col = columns[i];
 			var asSorting = col.asSorting;
-			var sTitle = col.sTitle.replace( /<.*?>/g, "" );
+			var titleSanitizer = document.createElement('div');
+			titleSanitizer.innerHTML = col.sTitle;
+			var sTitle = titleSanitizer.textContent || titleSanitizer.innerText || "";
 			var th = col.nTh;
 	
 			// IE7 is throwing an error when setting these properties with jQuery's
