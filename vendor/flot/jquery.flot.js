@@ -2814,7 +2814,14 @@ Licensed under the MIT license.
                         c = c.toString();
                     }
                     var div = legend.children();
-                    $('<div style="position:absolute;width:' + div.width() + 'px;height:' + div.height() + 'px;' + pos +'background-color:' + c + ';"> </div>').prependTo(legend).css('opacity', options.legend.backgroundOpacity);
+                    var bg = $('<div> </div>');
+                    bg.css({
+                        position: 'absolute',
+                        width: div.width() + 'px',
+                        height: div.height() + 'px',
+                        'background-color': c
+                    });
+                    bg.prependTo(legend).css('opacity', options.legend.backgroundOpacity);
                 }
             }
         }
