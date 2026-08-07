@@ -5474,7 +5474,7 @@
 	
 	
 	
-	var __re_html_remove = /<.*?>/g;
+	var __re_html_remove = /[<>]/g;
 	
 	
 	/**
