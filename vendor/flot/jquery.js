@@ -6315,8 +6315,7 @@ jQuery.extend({
 					div = context.createElement("div");
 					safe.appendChild( div );
 
-					// Fix "XHTML"-style tags in all browsers
-					elem = elem.replace(rxhtmlTag, "<$1></$2>");
+					// Avoid regex-based self-closing tag expansion as it can match inside attributes
 
 					// Go to html and back, then peel off extra wrappers
 					tag = ( rtagName.exec( elem ) || ["", ""] )[1].toLowerCase();
