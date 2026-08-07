@@ -2788,8 +2788,25 @@ Licensed under the MIT license.
                 var pos = "",
                     p = options.legend.position,
                     m = options.legend.margin;
-                if (m[0] == null)
+
+                p = typeof p === "string" ? p.toLowerCase() : "";
+                if (!/^[ns][ew]$/.test(p))
+                    p = "ne";
+
+                if (m == null)
+                    m = [0, 0];
+                else if (m[0] == null)
                     m = [m, m];
+
+                m = [
+                    parseFloat(m[0]),
+                    parseFloat(m[1])
+                ];
+                if (!isFinite(m[0]))
+                    m[0] = 0;
+                if (!isFinite(m[1]))
+                    m[1] = 0;
+
                 if (p.charAt(0) == "n")
                     pos += 'top:' + (m[1] + plotOffset.top) + 'px;';
                 else if (p.charAt(0) == "s")
