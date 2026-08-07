@@ -2781,9 +2781,12 @@ Licensed under the MIT license.
             if (fragments.length == 0)
                 return;
 
-            var table = '<table style="font-size:smaller;color:' + options.grid.color + '">' + fragments.join("") + '</table>';
+            var table = $("<table></table>")
+                .css("font-size", "smaller")
+                .css("color", options.grid.color)
+                .html(fragments.join(""));
             if (options.legend.container != null)
-                $(options.legend.container).html(table);
+                $(options.legend.container).empty().append(table);
             else {
                 var pos = "",
                     p = options.legend.position,
